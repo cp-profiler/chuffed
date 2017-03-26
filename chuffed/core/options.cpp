@@ -40,23 +40,24 @@ Options::Options() :
 	, sort_learnt_level(false)
 	, one_watch(true)
 
-        , exclude_introduced(false)
-        , decide_introduced(true)
-        , introduced_heuristic(false)
-        , use_var_is_introduced(false)
-        , use_profiler(false)
-        , print_nodes(false)
-        , print_implications(false)
-        , print_variable_list(false)
-        , send_skipped(true)
-        , send_domains(false)
+  , exclude_introduced(false)
+  , decide_introduced(true)
+  , introduced_heuristic(false)
+  , use_var_is_introduced(false)
+  , use_profiler(false)
+  , print_nodes(false)
+  , print_implications(false)
+  , print_variable_list(false)
+  , send_skipped(true)
+  , send_domains(false)
+  , execution_id(0)
 
-        , learnt_stats(false)
-        , learnt_stats_nogood(false)
-        , debug(false)
-        , exhaustive_activity(false)
+  , learnt_stats(false)
+  , learnt_stats_nogood(false)
+  , debug(false)
+  , exhaustive_activity(false)
 
-        , bin_clause_opt(true)
+  , bin_clause_opt(true)
 
 	, eager_limit(1000)
 	, sat_var_limit(2000000)
@@ -257,6 +258,8 @@ void printHelp(int& argc, char**& argv, const std::string& fileExt) {
   "Profiler Options:\n"
   "  --profiling [on|off], --no-profiling\n"
   "     Send search to CPProfiler (default " << (def.use_profiler ? "on" : "off") << ").\n"
+  "  --execution_id <n>\n"
+  "     The ID of this execution (if known) (default " << def.execution_id << ").\n"
 #endif
   "\n"
   ;
@@ -497,6 +500,8 @@ void parseOptions(int& argc, char**& argv, std::string* fileArg, const std::stri
 #ifdef HAS_PROFILER
     } else if (cop.getBool("--profiling", boolBuffer)) {
       so.use_profiler = boolBuffer;
+    } else if (cop.get("--execution_id", &intBuffer)) {
+      so.execution_id = intBuffer;
 #endif
     } else if (cop.getBool("--print-nodes", boolBuffer)) {
       so.print_nodes = boolBuffer;
