@@ -46,11 +46,15 @@ find_package(Threads)
 include_directories("chuffed")
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
-  include_directories("submodules/cp-profiler-integration/protobuf")
-  if (WIN32)
-    include_directories("submodules/cp-profiler-integration/protobuf/config_win")
+  if(OWN_PROTOBUF)
+    set(PROTOBUF_LIBS protobuf)
   else()
-    include_directories("submodules/cp-profiler-integration/protobuf/config_unix")
+    include_directories("submodules/cp-profiler-integration/protobuf")
+    if (WIN32)
+      include_directories("submodules/cp-profiler-integration/protobuf/config_win")
+    else()
+      include_directories("submodules/cp-profiler-integration/protobuf/config_unix")
+    endif()
   endif()
 else()
   message("Configuring without CP Profiler support.")
@@ -64,10 +68,8 @@ endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
 
+  if(!OWN_PROTOBUF)
   set(CHUFFED_PROFILER_SOURCES
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/connector.cpp
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.pb.cpp
-
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/compiler/importer.cc
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/compiler/parser.cc
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/descriptor.cc
@@ -103,6 +105,13 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/unknown_field_set.cc
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/wire_format.cc
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/wire_format_lite.cc
+    )
+  endif()
+
+  set(CHUFFED_PROFILER_SOURCES
+    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/connector.cpp
+    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.pb.cpp
+    ${CHUFFED_PROFILER_SOURCES}
   )
 
 endif()
@@ -245,7 +254,7 @@ chuffed/flatzinc/ast.h
 )
 
 add_executable(fzn-chuffed chuffed/flatzinc/fzn-chuffed.cpp)
-target_link_libraries(fzn-chuffed chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(fzn-chuffed chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT} ${PROTOBUF_LIBS})
 
 add_executable(bibd EXCLUDE_FROM_ALL chuffed/examples/bibd.cpp)
 target_link_libraries(bibd chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT})

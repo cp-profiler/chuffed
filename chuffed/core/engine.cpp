@@ -839,7 +839,7 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
 
 #ifdef HAS_PROFILER
     if (so.use_profiler)
-      profilerConnector.connect();
+      profilerConnector.connect(so.execution_id);
 #endif
 
     /* if (so.debug) { */
