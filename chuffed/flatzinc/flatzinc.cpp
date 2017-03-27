@@ -190,28 +190,41 @@ namespace FlatZinc {
 		}
 	}
 
-    
+	void flattenAnnotations(AST::Array* ann, std::vector<AST::Node*>& out) {
+		for (unsigned int i=0; i<ann->a.size(); i++) {
+			if (ann->a[i]->isCall("seq_search")) {
+				AST::Call* c = ann->a[i]->getCall();
+				if (c->args->isArray())
+					flattenAnnotations(c->args->getArray(), out);
+				else
+					out.push_back(c->args);
+			} else {
+				out.push_back(ann->a[i]);
+			}
+		}
+	}
+
     // Parsing the 'int_search' annotation and setting up the branching for it
     void FlatZincSpace::parseSolveAnnIntSearch(AST::Node* elemAnn, BranchGroup* branching, int& nbNonEmptySearchAnnotations) {
         assert(elemAnn->isCall("int_search"));
-        try {
+				try {
             // Retrieval of the data
 			AST::Call *call = elemAnn->getCall("int_search");
-			AST::Array *args = call->getArgs(4);
-			AST::Array *vars = args->a[0]->getArray();
-			vec<Branching*> va;
-			for (unsigned int i = 0; i < vars->a.size(); i++) {
+					AST::Array *args = call->getArgs(4);
+					AST::Array *vars = args->a[0]->getArray();
+					vec<Branching*> va;
+					for (unsigned int i = 0; i < vars->a.size(); i++) {
                 // Removal of constants
-				if (vars->a[i]->isInt()) continue;
-				IntVar* v = iv[vars->a[i]->getIntVar()];
+						if (vars->a[i]->isInt()) continue;
+						IntVar* v = iv[vars->a[i]->getIntVar()];
                 // Removal of fixed variables
-				if (v->isFixed()) continue;
-				va.push(v);
-			}
+						if (v->isFixed()) continue;
+						va.push(v);
+					}
 			branching->add(createBranch(va, ann2ivarsel(args->a[1]), ann2ivalsel(args->a[2])));
-			if (AST::String* s = dynamic_cast<AST::String*>(args->a[3])) {
-				if (s->s == "all") so.nof_solutions = 0;
-			}
+					if (AST::String* s = dynamic_cast<AST::String*>(args->a[3])) {
+						if (s->s == "all") so.nof_solutions = 0;
+					}
 			nbNonEmptySearchAnnotations++;
         }
         catch (AST::TypeError& e) {
@@ -222,25 +235,24 @@ namespace FlatZinc {
     // Parsing the 'bool_search' annotation and setting up the branching for it
     void FlatZincSpace::parseSolveAnnBoolSearch(AST::Node* elemAnn, BranchGroup* branching, int& nbNonEmptySearchAnnotations) {
         assert(elemAnn->isCall("bool_search"));
-        try {
+					try {
             // Retrieval of the data
 			AST::Call *call = elemAnn->getCall("bool_search");
-			AST::Array *args = call->getArgs(4);
-			AST::Array *vars = args->a[0]->getArray();
-			vec<Branching*> va(vars->a.size());
-			for (int i=vars->a.size(); i--; )
-				va[i] = new BoolView(bv[vars->a[i]->getBoolVar()]);
+						AST::Array *args = call->getArgs(4);
+						AST::Array *vars = args->a[0]->getArray();
+						vec<Branching*> va(vars->a.size());
+						for (int i=vars->a.size(); i--; )
+							va[i] = new BoolView(bv[vars->a[i]->getBoolVar()]);
 			branching->add(createBranch(va, ann2ivarsel(args->a[1]), ann2ivalsel(args->a[2]))); 
-			if (AST::String* s = dynamic_cast<AST::String*>(args->a[3])) {
-				if (s->s == "all") so.nof_solutions = 0;
-			}
+						if (AST::String* s = dynamic_cast<AST::String*>(args->a[3])) {
+							if (s->s == "all") so.nof_solutions = 0;
+						}
 			nbNonEmptySearchAnnotations++;
-        }
+					}
         catch (AST::TypeError& e) {
             throw FlatZinc::Error("Type error in bool_search annotation", e.what());
-        }
-    }
-
+				}
+			}
     // Parsing the 'priority_search' annotation and setting up the branching for it
     void FlatZincSpace::parseSolveAnnPrioritySearch(AST::Node* elemAnn, BranchGroup* branching, int& nbNonEmptySearchAnnotations) {
         assert(elemAnn->isCall("priority_search"));
@@ -260,7 +272,7 @@ namespace FlatZinc {
                 if (vars->a[i]->isInt()) {
 					int value = vars->a[i]->getInt();
 					v = getConstant(value);
-                }
+		} 
                 else {
 				    v = iv[vars->a[i]->getIntVar()];
                 }
@@ -322,8 +334,7 @@ namespace FlatZinc {
 				engine.branching->add(&sat);
 			}
 		}
-    }
-
+	}
     void FlatZincSpace::parseSolveAnn(AST::Array* ann, BranchGroup* branching, int & nbNonEmptySearchAnnotations) {
 	    if (ann) {
             for (unsigned int i = 0; i < ann->a.size(); i++) {
@@ -352,7 +363,6 @@ namespace FlatZinc {
             }
         }
     }
-
 
 	void FlatZincSpace::fixAllSearch() {
 		vec<Branching*> va;

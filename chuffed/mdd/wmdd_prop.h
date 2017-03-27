@@ -176,7 +176,7 @@ protected:
     p_info.push(Pinfo(engine.getBTPos(), leaf));
     return Reason(prop_id, p_info.size()-1);
     */
-    return Reason(prop_id, leaf);
+    return Reason(prop_id, leaf, con_id);
   }
   /*
   Reason createReason(BTPos pos, int leaf) {

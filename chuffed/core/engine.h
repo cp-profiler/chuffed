@@ -34,6 +34,7 @@ public:
 	vec<PseudoProp*> pseudo_props;             // List of pseudo propagators
 	vec<Checker*> checkers;                    // List of constraint checkers
 	vec<int> assumptions;                      // List of assumption literals
+  int cur_con_id;
 	bool finished_init;
 
 

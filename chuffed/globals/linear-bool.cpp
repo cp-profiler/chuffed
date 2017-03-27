@@ -32,7 +32,7 @@ public:
 
 		if (ones == y_max) {
 			for (int i = 0; i < x.size(); i++) {
-				if (!x[i].isFixed()) x[i].setVal2(0, Reason(prop_id, 0));
+				if (!x[i].isFixed()) x[i].setVal2(0, Reason(prop_id, 0, con_id));
 			}
 		}
 

@@ -1144,7 +1144,7 @@ bool MDDProp<U>::fullProp(void)
         if (intvars[v].remValNotR(val))
         {
 //            Clause* r = NULL;
-            Reason r = Reason(prop_id,val);
+            Reason r = Reason(prop_id,val,con_id);
             if (so.lazy) {
 #if 0
                vec<int> expl;
@@ -1630,7 +1630,7 @@ found:
         if (intvars[v].remValNotR(val))
         {
 //            Clause* r = NULL;
-            Reason r = Reason(prop_id,inferences[i]);
+            Reason r = Reason(prop_id,inferences[i],con_id);
             if (so.lazy) {
 #if 0
                vec<int> expl;

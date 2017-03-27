@@ -14,18 +14,18 @@ class IntVarEL : public IntVar {
 	Lit getGELit(int v) const { return toLit(base_blit+2*v); }
 	Lit getLELit(int v) const { return toLit(base_blit+2*v+1); }
 
-	void channelMin(int v);
-	void channelMax(int v);
-	void channelFix(int v);
+	void channelMin(int v, int con_id);
+	void channelMax(int v, int con_id);
+	void channelFix(int v, int con_id);
 
 #if INT_DOMAIN_LIST
-	void updateMin(int v, int i);
-	void updateMax(int v, int i);
+	void updateMin(int v, int i, int con_id);
+	void updateMax(int v, int i, int con_id);
 #else
-	void updateMin();
-	void updateMax();
+	void updateMin(int con_id);
+	void updateMax(int con_id);
 #endif
-	void updateFixed();
+	void updateFixed(int con_id);
 
 public:
 

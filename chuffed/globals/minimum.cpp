@@ -50,7 +50,7 @@ public:
 	bool propagate() {
 
 		// make a less than or equal to min(max(x_i))
-		setDom(y, setMax, min_max, x[min_max_var].getMaxLit());
+		setDom(y, setMax, min_max, Reason(x[min_max_var].getMaxLit(), con_id));
 
 		if (lower_change) {
 

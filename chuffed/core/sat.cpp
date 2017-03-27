@@ -24,7 +24,7 @@ std::ofstream learntStatsStream;
 cassert(sizeof(Lit) == 4);
 cassert(sizeof(Clause) == 4);
 cassert(sizeof(WatchElem) == 8);
-cassert(sizeof(Reason) == 8);
+cassert(sizeof(Reason) == 16);
 
 //---------
 // inline methods
@@ -60,8 +60,8 @@ inline void SAT::untrailToPos(vec<Lit>& t, int p) {
 // main methods
 
 
-SAT::SAT() :
-		lit_sort(trailpos)
+SAT::SAT() : prop_id(-2)
+	, lit_sort(trailpos)
 	, pushback_time(0)
 	, trail(1)
 	, qhead(1,0)
@@ -176,12 +176,12 @@ void SAT::addClause(Lit p, Lit q) {
 	}
 	if (value(p) == l_False) {
 		assert(decisionLevel() == 0);
-		enqueue(q);
+		enqueue(q, Reason(q, engine.cur_con_id));
 		return;
 	}
 	if (value(q) == l_False) {
 		assert(decisionLevel() == 0);
-		enqueue(p);
+		enqueue(p, Reason(q, engine.cur_con_id));
 		return;
 	}
 	bin_clauses++;
@@ -209,7 +209,7 @@ void SAT::addClause(Clause& c, bool one_watch) {
 		assert(decisionLevel() == 0);
 		if (DEBUG) fprintf(stderr, "warning: adding length 1 clause!\n");
 		if (value(c[0]) == l_False) TL_FAIL();
-		if (value(c[0]) == l_Undef) enqueue(c[0]);
+		if (value(c[0]) == l_Undef) enqueue(c[0], Reason(c[0], engine.cur_con_id));
 		free(&c);
 		return;
 	}
@@ -363,7 +363,7 @@ void SAT::enqueue(Lit p, Reason r) {
 	reason  [v] = r;
 	trail.last().push(p);
 	ChannelInfo& ci = c_info[v];
-	if (ci.cons_type == 1) engine.vars[ci.cons_id]->channel(ci.val, ci.val_type, sign(p));
+	if (ci.cons_type == 1) engine.vars[ci.cons_id]->channel(ci.val, ci.val_type, sign(p), r);
 }
 
 // enqueue from FD variable, value(p) = u/f, r = ?, don't channel
@@ -458,7 +458,7 @@ bool SAT::propagate() {
 				*j++ = *i++;
 				Lit q = toLit(we.d.d2);
 				switch (toInt(value(q))) {
-					case 0: enqueue(q, ~p); break;
+					case 0: enqueue(q, Reason(~p, prop_id)); break;
 					case -1:
 						setConfl(q, ~p);
 						qhead = trail.size();
@@ -504,7 +504,7 @@ bool SAT::propagate() {
 					qhead = trail.size();
 					while (i < end)	*j++ = *i++;
 				} else {
-					enqueue(c[0], &c);
+					enqueue(c[0], Reason(&c, prop_id));
 				}
 				FoundWatch:;
 			}

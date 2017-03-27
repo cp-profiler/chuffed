@@ -142,10 +142,10 @@ bool IntVarSL::remVal(int64_t v, Reason r, bool channel) {
 	return true;
 }
 
-void IntVarSL::channel(int val, int val_type, int sign) {
+void IntVarSL::channel(int val, int val_type, int sign, Reason r) {
 //	fprintf(stderr, "funny channel\n");
 	int type = val_type * 3 ^ sign;
-	el->set(val, type, false);
+	el->set(val, type, r, false);
 	if (type == 0) vals[values[val]] = false;
 	min = values[el->min];
 	max = values[el->max];

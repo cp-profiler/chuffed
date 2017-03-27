@@ -32,6 +32,7 @@ class MIP : public Propagator {
 	enum SimplexStatus { SIMPLEX_OPTIMAL, SIMPLEX_GOOD_ENOUGH, SIMPLEX_IN_PROGRESS, SIMPLEX_UNBOUNDED };
 
 public:
+  int prop_id;
 	set<IntVar*> var_set;
 	map<IntVar*,int> var_map;
 	vec<IntVar*> vars;

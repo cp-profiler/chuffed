@@ -54,6 +54,7 @@ class SAT : public Branching {
 
 public:
 
+  int prop_id;
 	// Persistent state
 
   vec<Clause*> clauses;             // List of problem clauses

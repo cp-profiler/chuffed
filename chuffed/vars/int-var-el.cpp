@@ -95,7 +95,7 @@ void IntVarEL::initVLits() {
 	initVals();
 	if (lit_min == INT_MIN) { lit_min = min; lit_max = max; }
 	base_vlit = 2*(sat.nVars()-lit_min);
-	sat.newVar(lit_max-lit_min+1, ChannelInfo(var_id, 1, 0, lit_min));
+	sat.newVar(lit_max-lit_min+1, ChannelInfo(var_id, 1, 0, lit_min, engine.cur_con_id));
 	for (int i = lit_min; i <= lit_max; i++) {
 		if (!indomain(i)) sat.cEnqueue(getNELit(i), NULL);
 	}
@@ -131,7 +131,7 @@ void IntVarEL::initBLits() {
 	if (base_blit != INT_MIN) return;
 	if (lit_min == INT_MIN) { lit_min = min; lit_max = max; }
 	base_blit = 2*(sat.nVars()-lit_min)+1;
-	sat.newVar(lit_max-lit_min+2, ChannelInfo(var_id, 1, 1, lit_min-1));
+	sat.newVar(lit_max-lit_min+2, ChannelInfo(var_id, 1, 1, lit_min-1, engine.cur_con_id));
 	for (int i = lit_min; i <= min; i++) {
           sat.cEnqueue(getGELit(i), NULL);
         }
@@ -181,10 +181,10 @@ Lit IntVarEL::getLit(int64_t v, int t) {
 }
 
 // Use when you've just set [x >= v]
-inline void IntVarEL::channelMin(int v) {
+inline void IntVarEL::channelMin(int v, int con_id) {
 	// Set [x >= v-1] to [x >= min+1] using [x >= i] \/ ![x >= v]
 	// Set [x != v-1] to [x != min] using [x != i] \/ ![x >= v]
-	Reason r(~getGELit(v));
+	Reason r(~getGELit(v), con_id);
 	for (int i = v-1; i > min; i--) {
 		sat.cEnqueue(getGELit(i), r);
 		if (vals[i]) sat.cEnqueue(getNELit(i), r);
@@ -194,10 +194,10 @@ inline void IntVarEL::channelMin(int v) {
 }
 
 // Use when you've just set [x <= v]
-inline void IntVarEL::channelMax(int v) {
+inline void IntVarEL::channelMax(int v, int con_id) {
 	// Set [x <= v+1] to [x <= max-1] to using [x <= i] \/ ![x <= v]
 	// Set [x != v+1] to [x != max] to using ![x = i] \/ ![x <= v]
-	Reason r(~getLELit(v));
+	Reason r(~getLELit(v), con_id);
 	for (int i = v+1; i < max; i++) {
 		sat.cEnqueue(getLELit(i), r);
 		if (vals[i]) sat.cEnqueue(getNELit(i), r);
@@ -207,55 +207,55 @@ inline void IntVarEL::channelMax(int v) {
 }
 
 // Use when you've just set [x = v]
-inline void IntVarEL::channelFix(int v) {
-	Reason r(getNELit(v));
+inline void IntVarEL::channelFix(int v, int con_id) {
+	Reason r(getNELit(v), con_id);
 	if (min < v) {
 		// Set [x >= v] using [x >= v] \/ ![x = v]
 		sat.cEnqueue(getGELit(v), r);
-		channelMin(v);
+		channelMin(v, con_id);
 	}
 	if (max > v) {
 		// Set [x <= v] using [x <= v] \/ ![x = v]
 		sat.cEnqueue(getLELit(v), r);
-		channelMax(v);
+		channelMax(v, con_id);
 	}
 }
 
 #if INT_DOMAIN_LIST
-inline void IntVarEL::updateMin(int v, int i) {
+inline void IntVarEL::updateMin(int v, int i, int con_id) {
 	for (; v < i; ++v) {
 		// Set [x >= v+1] using [x >= v+1] \/ [x <= v-1] \/ [x = v]
-		Reason r(getLELit(v-1), getEQLit(v));
+		Reason r(getLELit(v-1), getEQLit(v), con_id);
 		sat.cEnqueue(getGELit(v+1), r);
 	}
 	min = v; changes |= EVENT_C | EVENT_L;
 }
 
-inline void IntVarEL::updateMax(int v, int i) {
+inline void IntVarEL::updateMax(int v, int i, int con_id) {
 	for (; v > i; --v) {
 		// Set [x <= v-1] using [x <= v-1] \/ [x >= v+1] \/ [x = v]
-		Reason r(getGELit(v+1), getEQLit(v));
+		Reason r(getGELit(v+1), getEQLit(v), con_id);
 		sat.cEnqueue(getLELit(v-1), r);
 	}
 	max = v; changes |= EVENT_C | EVENT_U;
 }
 #else
-inline void IntVarEL::updateMin() {
+inline void IntVarEL::updateMin(int con_id) {
 	int v = min;
 	while (!vals[v]) {
 		// Set [x >= v+1] using [x >= v+1] \/ [x <= v-1] \/ [x = v]
-		Reason r(getLELit(v-1), getEQLit(v));
+		Reason r(getLELit(v-1), getEQLit(v), con_id);
 		sat.cEnqueue(getGELit(v+1), r);
 		v++;
 	}
 	if (v > min) { min = v; changes |= EVENT_L; }
 }
 
-inline void IntVarEL::updateMax() {
+inline void IntVarEL::updateMax(int con_id) {
 	int v = max;
 	while (!vals[v]) {
 		// Set [x <= v-1] using [x <= v-1] \/ [x >= v+1] \/ [x = v]
-		Reason r(getGELit(v+1), getEQLit(v));
+		Reason r(getGELit(v+1), getEQLit(v), con_id);
 		sat.cEnqueue(getLELit(v-1), r);
 		v--;
 	}
@@ -263,11 +263,11 @@ inline void IntVarEL::updateMax() {
 }
 #endif
 
-inline void IntVarEL::updateFixed() {
+inline void IntVarEL::updateFixed(int con_id) {
 	if (isFixed()) {
 		int v = min;
 		// Set [x = v] using [x = v] \/ [x <= v-1] \/ [x >= v+1]
-		Reason r(getLELit(v-1), getGELit(v+1));
+		Reason r(getLELit(v-1), getGELit(v+1), con_id);
 		sat.cEnqueue(getEQLit(v), r);
 		changes |= EVENT_F;
 	}
@@ -277,19 +277,19 @@ bool IntVarEL::setMin(int64_t v, Reason r, bool channel) {
 	assert(setMinNotR(v));
 	if (channel) sat.cEnqueue(getLit(v, 2), r);
 	if (v > max) { assert(sat.confl); return false; }
-	channelMin(v);
+	channelMin(v, r.cid);
 #if INT_DOMAIN_LIST
 	int i;
 	int j = vals_count;
 	for (i = min; i < v; i = vals_list[2*i+1])
 		--j;
-	updateMin(v, i);
+	updateMin(v, i, r.cid);
 	vals_count = j;
 #else
 	min = v; changes |= EVENT_C | EVENT_L;
-	updateMin();
+	updateMin(r.cid);
 #endif
-	updateFixed();
+	updateFixed(r.cid);
 	pushInQueue();
 	return true;
 }
@@ -298,19 +298,19 @@ bool IntVarEL::setMax(int64_t v, Reason r, bool channel) {
 	assert(setMaxNotR(v));
 	if (channel) sat.cEnqueue(getLit(v, 3), r);
 	if (v < min) { assert(sat.confl); return false; }
-	channelMax(v);
+	channelMax(v, r.cid);
 #if INT_DOMAIN_LIST
 	int i;
 	int j = vals_count;
 	for (i = max; i > v; i = vals_list[2*i])
 		--j;
-	updateMax(v, i);
+	updateMax(v, i, r.cid);
 	vals_count = j;
 #else
 	max = v; changes |= EVENT_C | EVENT_U;
-	updateMax();
+	updateMax(r.cid);
 #endif
-	updateFixed();
+	updateFixed(r.cid);
 	pushInQueue();
 	return true;
 }
@@ -320,7 +320,7 @@ bool IntVarEL::setVal(int64_t v, Reason r, bool channel) {
 	if (channel) sat.cEnqueue(getLit(v, 1), r);
 	if (!indomain(v)) { assert(sat.confl); return false; }
 	changes |= EVENT_C | EVENT_F;
-	channelFix(v);
+	channelFix(v, r.cid);
 	if (min < v) { min = v; changes |= EVENT_L; }
 	if (max > v) { max = v; changes |= EVENT_U; }
 #if INT_DOMAIN_LIST
@@ -337,9 +337,9 @@ bool IntVarEL::remVal(int64_t v, Reason r, bool channel) {
 	if (isFixed()) { assert(sat.confl); return false; }
 #if INT_DOMAIN_LIST
 	if (v == min)
-		updateMin(min, vals_list[2*min+1]);
+		updateMin(min, vals_list[2*min+1], r.cid);
 	else if (v == max)
-		updateMax(max, vals_list[2*max]);
+		updateMax(max, vals_list[2*max], r.cid);
 	else {
 		vals[v] = 0;
 		vals_list[vals_list[2*v]*2+1] = vals_list[2*v+1];
@@ -350,10 +350,10 @@ bool IntVarEL::remVal(int64_t v, Reason r, bool channel) {
 #else
 	changes |= EVENT_C;
 	vals[v] = 0;
-	updateMin();
-	updateMax();
+	updateMin(r.cid);
+	updateMax(r.cid);
 #endif
-	updateFixed();
+	updateFixed(r.cid);
 	pushInQueue();
 	return true;
 }

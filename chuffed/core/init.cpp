@@ -14,67 +14,67 @@
 void process_ircs();
 
 void SIGINT_handler(int signum) {
-	if (so.thread_no == -1) fprintf(stderr, "*** INTERRUPTED ***\n");
-	engine.printStats();
-	exit(1);
+  if (so.thread_no == -1) fprintf(stderr, "*** INTERRUPTED ***\n");
+  engine.printStats();
+  exit(1);
 }
 
 void Engine::init() {
-	signal(SIGINT,SIGINT_handler);
-	//	signal(SIGHUP,SIGINT_handler);
+  signal(SIGINT,SIGINT_handler);
+  //	signal(SIGHUP,SIGINT_handler);
 
-	if (so.parallel) master.initMPI();
+  if (so.parallel) master.initMPI();
 
-	// Get the vars ready
+  // Get the vars ready
 
-	for (int i = 0; i < vars.size(); i++) {
-		IntVar *v = vars[i];
-		if (v->pinfo.size() == 0) v->in_queue = true;
-		else v->pushInQueue();
-	}
+  for (int i = 0; i < vars.size(); i++) {
+    IntVar *v = vars[i];
+    if (v->pinfo.size() == 0) v->in_queue = true;
+    else v->pushInQueue();
+  }
 
-	if (so.lazy) {
-		for (int i = 0; i < vars.size(); i++) {
-			if (vars[i]->getMax() - vars[i]->getMin() <= so.eager_limit) {
-				vars[i]->specialiseToEL();
-			} else {
+  if (so.lazy) {
+    for (int i = 0; i < vars.size(); i++) {
+      if (vars[i]->getMax() - vars[i]->getMin() <= so.eager_limit) {
+        vars[i]->specialiseToEL();
+      } else {
         if (so.verbosity >= 2)
           std::cerr << "using lazy literal\n";
-				vars[i]->specialiseToLL();
-			}
-		}
-	} else {
-		for (int i = 0; i < vars.size(); i++) vars[i]->initVals(true);
-	}
+        vars[i]->specialiseToLL();
+      }
+    }
+  } else {
+    for (int i = 0; i < vars.size(); i++) vars[i]->initVals(true);
+  }
 
-	// Get the propagators ready
+  // Get the propagators ready
 
-	process_ircs();
+  process_ircs();
 
-	// Get well founded propagators ready
+  // Get well founded propagators ready
 
-	wf_init();
+  wf_init();
 
-	// Get MIP propagator ready
+  // Get MIP propagator ready
 
-	if (so.mip) mip->init();
+  if (so.mip) mip->init();
 
-	// Get SAT propagator ready
+  // Get SAT propagator ready
 
-	sat.init();
+  sat.init();
 
-	// Set lits allowed to be in learnt clauses
-	problem->restrict_learnable();
+  // Set lits allowed to be in learnt clauses
+  problem->restrict_learnable();
 
-	// Get LDSB ready
+  // Get LDSB ready
 
-	if (so.ldsb) ldsb.init();
+  if (so.ldsb) ldsb.init();
 
-	// Do MIP presolve
+  // Do MIP presolve
 
-	if (so.mip) mip->presolve();
+  if (so.mip) mip->presolve();
 
-	// Ready
+  // Ready
 
-	finished_init = true;
+  finished_init = true;
 }
