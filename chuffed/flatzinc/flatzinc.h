@@ -202,17 +202,18 @@ namespace FlatZinc {
     }
   };
 
-
+static int cur_id = 0;
 	/// Abstract representation of a constraint
 	class ConExpr {
 	public:
+    int con_id;
 		/// Identifier for the constraint
 		std::string id;
 		/// Constraint arguments
 		AST::Array* args;
 		/// Constructor
 		ConExpr(const std::string& id0, AST::Array* args0) :
-			id(id0), args(args0) {}
+			con_id(cur_id++), id(id0), args(args0) {}
 		/// Return argument \a i
 		AST::Node* operator[](int i) const { return args->a[i]; }
 		/// Destructor

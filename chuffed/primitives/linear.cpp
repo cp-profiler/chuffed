@@ -64,7 +64,7 @@ public:
 				if (so.lazy) {
 					for (int j = 0; j < x.size(); j++) ps[j+1] = x[j].getMaxLit();
 					for (int j = 0; j < y.size(); j++) ps[j+1+x.size()] = y[j].getMaxLit();
-					expl = Reason_new(ps);
+					expl = Reason(Reason_new(ps), con_id);
 				}
 				if (!r.setVal(v, expl)) return false;
 			}
@@ -92,7 +92,7 @@ public:
 					for (int j = 0; j < x.size(); j++) ps[j+R] = x[j].getMaxLit();
 					for (int j = 0; j < y.size(); j++) ps[j+R+x.size()] = y[j].getMaxLit();
 					ps[R+i] = ps[0];
-					expl = Reason_new(ps);
+					expl = Reason(Reason_new(ps), con_id);
 				}
 				if (!x[i].setMin(v, expl)) return false;
 			}
@@ -108,7 +108,7 @@ public:
 					for (int j = 0; j < x.size(); j++) ps[j+R] = x[j].getMaxLit();
 					for (int j = 0; j < y.size(); j++) ps[j+R+x.size()] = y[j].getMaxLit();
 					ps[R+x.size()+i] = ps[0];
-					expl = Reason_new(ps);
+					expl = Reason(Reason_new(ps), con_id);
 				}
 				if (!y[i].setMin(v, expl)) return false;
 			}
@@ -190,7 +190,7 @@ public:
 					m_r = Reason_new(sz+1);
 					for (int i = 0; i < sz; i++) (*m_r)[i+1] = x[i].getValLit();
 				}
-				return r.setVal(0, m_r);
+				return r.setVal(0, Reason(m_r, con_id));
 			}
 			return true;
 		}
@@ -208,13 +208,13 @@ public:
 				(k >= sp && y[k].remValNotR(-sum_fixed))) {
 			Clause *m_r = NULL;
 			if (so.lazy) {
-				m_r = Reason_new(sz+R);
+				m_r =Reason_new(sz+R);
 				for (int i = 0; i < k; i++) (*m_r)[i+1] = x[i].getValLit();
 				for (int i = k+1; i < sz; i++) (*m_r)[i] = x[i].getValLit();
 				if (R) (*m_r)[sz] = r.getValLit();
 			}
-			if (k < sp) {	if (!x[k].remVal(-sum_fixed, m_r)) return false; }
-			else        {	if (!y[k].remVal(-sum_fixed, m_r)) return false; }
+			if (k < sp) {	if (!x[k].remVal(-sum_fixed, Reason(m_r, con_id))) return false; }
+			else        {	if (!y[k].remVal(-sum_fixed, Reason(m_r, con_id))) return false; }
 		}
 
 		return true;

@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
 		FlatZinc::solve(filename);
 	}
 
+  engine.cur_con_id = -500;
   if (engine.opt_var && so.nof_solutions!=0) {
     std::string os;
     std::stringstream oss(os);

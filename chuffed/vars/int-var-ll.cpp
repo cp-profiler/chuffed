@@ -15,7 +15,7 @@ IntVarLL::IntVarLL(const IntVar& other) : IntVar(other), ld(2), li(0), hi(1) {
         // explanation will use the reason which includes the actual
         // bounds literals.
 	valLit = Lit(sat.nVars(), 1);
-	int v = sat.newVar(1, ChannelInfo(var_id, 1, 0, 0));
+	int v = sat.newVar(1, ChannelInfo(var_id, 1, 0, 0, engine.cur_con_id));
 	sat.flags[v].setDecidable(false);
 	sat.flags[v].setUIPable(false);
 	sat.flags[v].setLearnable(false);
@@ -79,7 +79,7 @@ inline Lit IntVarLL::getGELit(int v) {
 #if DEBUG_VERBOSE
         std::cerr << "created new literal: " << mi << ": " << this << " >= " << v << "\n";
 #endif
-	ld[mi].var = sat.getLazyVar(ChannelInfo(var_id, 1, 1, v-1));
+	ld[mi].var = sat.getLazyVar(ChannelInfo(var_id, 1, 1, v-1, engine.cur_con_id));
 	ld[mi].val = v-1;
 	ld[mi].next = ni;
 	ld[mi].prev = ld[ni].prev;
@@ -104,7 +104,7 @@ inline Lit IntVarLL::getLELit(int v) {
 	if (ld[ni].val == v) return Lit(ld[ni].var, 0);
 	// overshot, create new var and insert before ni
 	int mi = getLitNode();
-	ld[mi].var = sat.getLazyVar(ChannelInfo(var_id, 1, 1, v));
+	ld[mi].var = sat.getLazyVar(ChannelInfo(var_id, 1, 1, v, engine.cur_con_id));
 	ld[mi].val = v;
 	ld[mi].prev = ni;
 	ld[mi].next = ld[ni].next;
@@ -208,7 +208,7 @@ Lit IntVarLL::createLit(int _v) {
 	if (ld[ni].val == v) return Lit(ld[ni].var, s);
 	// overshot, create new var and insert before ni
 	int mi = getLitNode();
-	ld[mi].var = sat.getLazyVar(ChannelInfo(var_id, 1, 1, v));
+	ld[mi].var = sat.getLazyVar(ChannelInfo(var_id, 1, 1, v, engine.cur_con_id));
 	ld[mi].val = v;
 	ld[mi].prev = ni;
 	ld[mi].next = ld[ni].next;

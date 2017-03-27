@@ -14,7 +14,7 @@ MIP *mip;
 //-----
 // Main propagator methods
 
-MIP::MIP() : level_lb(-1), level_ub(-1), status(0), simplex_time(0) {
+MIP::MIP() : prop_id(-3), level_lb(-1), level_ub(-1), status(0), simplex_time(0) {
 //	priority = 3;
 	priority = 0;
 }
@@ -234,7 +234,7 @@ bool MIP::propagateBound(int i, long double s) {
 			m_r->temp_expl = 1;
 			sat.rtrail.last().push(m_r);
 		}
-		if (!v.setMax(max, m_r)) return false;
+		if (!v.setMax(max, Reason(m_r, prop_id))) return false;
 	}
 	return true;
 }

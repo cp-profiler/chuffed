@@ -193,7 +193,8 @@ void rewindPaths(
 }
 
 Engine::Engine()
-    : finished_init(false)
+    : cur_con_id(0)
+    , finished_init(false)
     , problem(NULL)
     , opt_var(NULL)
     , best_sol(-1)
@@ -568,7 +569,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                     std::stringstream ss;
                     //                    ss << "out_learnt (interpreted):";
                     for (int i = 0 ; i < sat.out_learnt.size() ; i++)
-                        ss << " " << getLitString(toInt(sat.out_learnt[i]));
+                        ss << " " << getLitString(toInt(sat.out_learnt[i])) << ":" << sat.reason[var(sat.out_learnt[i])].cid;
                     std::stringstream contribString;
                     contribString << "{\"nogoods\":[";
                     for (std::set<int>::const_iterator it = contributingNogoods.begin() ;

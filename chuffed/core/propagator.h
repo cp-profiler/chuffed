@@ -27,11 +27,14 @@ Assumptions:
 #include <chuffed/core/sat.h>
 //#include "core/prop-group.h"
 
+#include <iostream>
+
 enum ConLevel { CL_DEF, CL_VAL, CL_BND, CL_DOM };
 
 class Propagator {
 public:
 	int const prop_id;
+	int const con_id;
 	int priority;
 
 	// Persistent state
@@ -40,7 +43,7 @@ public:
 	// Intermediate state
 	bool in_queue;
 
-	Propagator() : prop_id(engine.propagators.size()), priority(0),
+	Propagator() : prop_id(engine.propagators.size()), con_id(engine.cur_con_id), priority(0),
 		satisfied(false), in_queue(false) {
 		engine.propagators.push(this);
 	}
@@ -137,7 +140,7 @@ static inline Clause* Reason_new(vec<Lit>& ps) {
 
 #define setDom2(var, op, val, index) do {                                         \
 	int64_t v = (val);                                                              \
-	if (var.op ## NotR(v) && !var.op(v, Reason(prop_id, index))) return false;      \
+	if (var.op ## NotR(v) && !var.op(v, Reason(prop_id, index, con_id))) return false;      \
 } while (0)
 
 

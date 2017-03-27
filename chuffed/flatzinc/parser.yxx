@@ -250,6 +250,7 @@ void initfg(ParserState* pp) {
       try {
         assert(pp->domainConstraints[i]->args->a.size() == 2);
         pp->fg->postConstraint(*pp->domainConstraints[i], NULL);
+        engine.cur_con_id ++;
         delete pp->domainConstraints[i];
       } catch (FlatZinc::Error& e) {
         yyerror(pp, e.toString().c_str());        
@@ -261,6 +262,7 @@ void initfg(ParserState* pp) {
     if (!pp->hadError) {
       try {
         pp->fg->postConstraint(*pp->domainConstraints2[i].first, pp->domainConstraints2[i].second);
+        engine.cur_con_id ++;
         delete pp->domainConstraints2[i].first;
         delete pp->domainConstraints2[i].second;
       } catch (FlatZinc::Error& e) {
@@ -1186,6 +1188,7 @@ constraint_item :
         if (!pp->hadError) {
           try {
             pp->fg->postConstraint(c, $6);
+            engine.cur_con_id ++;
           } catch (FlatZinc::Error& e) {
             yyerror(pp, e.toString().c_str());
           }
@@ -1207,6 +1210,7 @@ constraint_item :
         if (!pp->hadError) {
           try {
             pp->fg->postConstraint(c, $3);
+            engine.cur_con_id ++;
           } catch (FlatZinc::Error& e) {
             yyerror(pp, e.toString().c_str());
           }
@@ -1228,6 +1232,7 @@ constraint_item :
           if (!pp->hadError) {
             try {
               pp->fg->postConstraint(c, $6);
+              engine.cur_con_id ++;
             } catch (FlatZinc::Error& e) {
               yyerror(pp, e.toString().c_str());
             }

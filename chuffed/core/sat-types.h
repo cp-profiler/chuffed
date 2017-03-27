@@ -1,6 +1,8 @@
 #ifndef sat_types_h
 #define sat_types_h
 
+#include <iostream>
+
 //=================================================================================================
 // Variables, literals, lifted booleans, clauses:
 
@@ -161,11 +163,16 @@ struct ChannelInfo {
 	unsigned int cons_type : 2;
 	unsigned int val_type  : 1;
 	int val;
-	ChannelInfo(unsigned int cid, unsigned int ct, unsigned int vt, int v)
-		: cons_id(cid), cons_type(ct), val_type(vt), val(v) {}
+  int con_id;
+	ChannelInfo(unsigned int cid, unsigned int ct, unsigned int vt, int v, int flat_con_id)
+		: cons_id(cid), cons_type(ct), val_type(vt), val(v), con_id(flat_con_id) {
+      if(con_id==-500) {
+        std::cerr << "Oh oh!\n";
+      }
+    }
 };
 
-const ChannelInfo ci_null(0,0,0,0);
+const ChannelInfo ci_null(0,0,0,0,-1);
 
 
 //=================================================================================================
@@ -205,11 +212,22 @@ public:
 		} d;
 		int64_t a;
 	};
-	Reason() : a(0) {}
-	Reason(Clause *c) : pt(c) { if (sizeof(Clause *) == 4) d.d2 = 0; }
-	Reason(int prop_id, int inf_id) { d.type = 1; d.d1 = inf_id; d.d2 = prop_id; }
-	Reason(Lit p) { d.type = 2; d.d1 = toInt(p); }
-	Reason(Lit p, Lit q) { d.type = 3; d.d1 = toInt(p); d.d2 = toInt(q); }
+  int32_t cid;
+	Reason() : a(0),cid(-1) {}
+	Reason(Clause *c, int ci=-1) : pt(c), cid(ci) { 
+    if (sizeof(Clause *) == 4)
+      d.d2 = 0;
+  }
+	Reason(int prop_id, int inf_id, int ci) : cid(ci) {
+    d.type = 1; d.d1 = inf_id; d.d2 = prop_id; 
+  }
+	Reason(Lit p, int ci=-1) : cid(ci) {
+    d.type = 2;
+    d.d1 = toInt(p);
+    //if(pi==-1)
+    //  std::cerr << "Bad: " << cid << "\n";
+  }
+	Reason(Lit p, Lit q, int ci=-1) : cid(ci) { d.type = 3; d.d1 = toInt(p); d.d2 = toInt(q); }
 	bool operator == (Reason o) const { return a == o.a; }
 	bool isLazy() const { return d.type == 1; }
 };

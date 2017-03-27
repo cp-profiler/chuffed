@@ -35,7 +35,7 @@ public:
 	bool setVal(int64_t v, Reason r = NULL, bool channel = true);
 	bool remVal(int64_t v, Reason r = NULL, bool channel = true);
 
-	void channel(int val, int val_type, int sign);
+	void channel(int val, int val_type, int sign, Reason r);
 	void debug();
 };
 

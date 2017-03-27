@@ -48,7 +48,7 @@ public:
 			trailed_pinfo_sz = true;
 		}
 		p_info.push(Pinfo(var, est));
-		return Reason(prop_id, p_info.size()-1);
+		return Reason(prop_id, p_info.size()-1, con_id);
 	}
 
 	bool propagate() {
@@ -278,7 +278,7 @@ public:
 			trailed_pinfo_sz = true;
 		}
 		p_info.push(Pinfo(ps_i, var, let));
-		return Reason(prop_id, p_info.size()-1);
+		return Reason(prop_id, p_info.size()-1, con_id);
 	}
 
 

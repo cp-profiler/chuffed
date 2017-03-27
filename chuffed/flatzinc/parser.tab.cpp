@@ -308,6 +308,7 @@ void initfg(ParserState* pp) {
     }
   }
 #endif
+  engine.cur_con_id = -20;
 }
 
 AST::Node* arrayOutput(AST::Call* ann) {

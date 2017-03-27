@@ -280,7 +280,7 @@ public:
 //--------------------------------------------------
 // Domain operations
 
-	void set(int val, int type, bool channel = true);
+	void set(int val, int type, Reason r = NULL, bool channel = true);
 
 	bool setMinNotR(int64_t v) const { return v > min; }
 	bool setMaxNotR(int64_t v) const { return v < max; }
@@ -293,8 +293,8 @@ public:
 	virtual bool remVal(int64_t v, Reason r = NULL, bool channel = true);
 	virtual bool allowSet(vec<int>& v, Reason r = NULL, bool channel = true);
 
-	virtual void channel(int val, int val_type, int sign) {
-		set(val, val_type * 3 ^ sign, false);
+	virtual void channel(int val, int val_type, int sign, Reason r) {
+		set(val, val_type * 3 ^ sign, r, false);
 	}
 
 	Lit operator >= (int val) { return getLit(val, 2); }
@@ -329,12 +329,12 @@ inline void IntVar::clearPropState() {
 	in_queue = false;
 }
 
-inline void IntVar::set(int val, int type, bool channel) {
+inline void IntVar::set(int val, int type, Reason r, bool channel) {
 	switch (type) {
-		case 0: remVal(val, NULL, channel); break;
-		case 1: setVal(val, NULL, channel); break;
-		case 2: setMin(val+1, NULL, channel); break;
-		case 3: setMax(val, NULL, channel); break;
+		case 0: remVal(val,   r, channel); break;
+		case 1: setVal(val,   r, channel); break;
+		case 2: setMin(val+1, r, channel); break;
+		case 3: setMax(val,   r, channel); break;
 		default: NEVER;
 	}
 }

@@ -51,7 +51,7 @@ public:
 				if (j == a) continue;
 				if (x[j].remValNotR(b)) {
  //fprintf(stderr, "  var %d != %d\n", j, b);
-					if (!x[j].remVal(b, r)) {
+					if (!x[j].remVal(b, Reason(r, con_id))) {
  //fprintf(stderr, "  failure\n");
 						return false;
 					}
@@ -517,7 +517,7 @@ public:
 			}
 			memset(scoreboard + min_val, 0, max_val + 1 - min_val);
 		}
-		return x[node].remVal(i, r);
+		return x[node].remVal(i, Reason(r, con_id));
 	}
 
 	bool tarjan(int node) {
