@@ -134,7 +134,7 @@ static void bool_linear_leq(vec<Lit>& terminals, vec<Lit>& xs, int k)
     vec<Lit> cl;
     for(int ii = 0; ii < xs.size(); ii++)
       cl.push(~xs[ii]);
-    sat.addClause(cl);
+    sat.addClause(cl, engine.cur_con_id);
     return;
   }
 
@@ -193,7 +193,7 @@ static Lit _bool_linear_leq(SparseSet<>& elts, vec<Lit>& vs, vec<Lit>& terminals
     cl.push(high);
     cl.push(~xs[vv]);
     cl.push(~ret);
-    sat.addClause(cl);
+    sat.addClause(cl, engine.cur_con_id);
   }
 
   elts.insert(vv*(k+1) + cc);
@@ -319,7 +319,7 @@ static Lit _bool_linear_leq_std(SparseSet<>& elts, vec<Lit>& vs, vec<Lit>& termi
     cl.push(high);
     cl.push(~xs[vv]);
     cl.push(~ret);
-    sat.addClause(cl);
+    sat.addClause(cl, engine.cur_con_id);
 #endif
   }
 

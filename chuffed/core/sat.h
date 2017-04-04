@@ -132,7 +132,7 @@ public:
 	int  getLazyVar(ChannelInfo ci);
 	void removeLazyVar(int v);
 	void addClause(Lit p, Lit q);
-	void addClause(vec<Lit>& ps, bool one_watch = false);
+	void addClause(vec<Lit>& ps, int con_id, bool one_watch = false);
 	void addClause(Clause& c, bool one_watch = false);
 	void removeClause(Clause& c);
 	void topLevelCleanUp();

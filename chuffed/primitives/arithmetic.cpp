@@ -20,22 +20,22 @@ public:
 		int64_t u = x.getMax();
 
 		if (l >= 0) {
-			setDom(y, setMin, l, x.getMinLit());
-			setDom(y, setMax, u, x.getMinLit(), x.getMaxLit());
+			setDom(y, setMin, l, Reason(x.getMinLit(), con_id));
+			setDom(y, setMax, u, Reason(x.getMinLit(), x.getMaxLit(), con_id));
 		} else if (u <= 0) {
-			setDom(y, setMin, -u, x.getMaxLit());
-			setDom(y, setMax, -l, x.getMaxLit(), x.getMinLit());
+			setDom(y, setMin, -u, Reason(x.getMaxLit(), con_id));
+			setDom(y, setMax, -l, Reason(x.getMaxLit(), x.getMinLit(), con_id));
 		} else {
 			// Finesse stronger bound
 			int64_t t = (-l > u ? -l : u);
-			setDom(y, setMax, t, x.getMaxLit(), x.getMinLit());
+			setDom(y, setMax, t, Reason(x.getMaxLit(), x.getMinLit(), con_id));
 //			setDom(y, setMax, t, x.getFMaxLit(t), x.getFMinLit(-t));
 //			setDom(y, setMax, t, x.getLit(t+1, 2), x.getLit(-t-1, 3));
 		}
 
 
-		setDom(x, setMax, y.getMax(), y.getMaxLit());
-		setDom(x, setMin, -y.getMax(), y.getMaxLit());
+		setDom(x, setMax, y.getMax(),  Reason(y.getMaxLit(), con_id));
+		setDom(x, setMin, -y.getMax(), Reason(y.getMaxLit(), con_id));
 
 /*
 		if (x.isFixed()) {
@@ -132,7 +132,7 @@ public:
             (*reason)[2] = x.getMaxLit();
             (*reason)[3] = y.getMinLit();
             (*reason)[4] = y.getMaxLit();
-            setDom(z, setMin, z_min_new, reason);
+            setDom(z, setMin, z_min_new, Reason(reason, con_id));
         }
         
         // New upper bound on z
@@ -147,7 +147,7 @@ public:
             (*reason)[2] = x.getMaxLit();
             (*reason)[3] = y.getMinLit();
             (*reason)[4] = y.getMaxLit();
-            setDom(z, setMax, z_max_new, reason);
+            setDom(z, setMax, z_max_new, Reason(reason, con_id));
         }
 
         return true;
@@ -164,18 +164,18 @@ public:
                 (*reason)[2] = v.getMaxLit();
                 (*reason)[3] = z.getMinLit();
                 (*reason)[4] = z.getMaxLit();
-                setDom(u, setMin, 0, reason);
-                setDom(u, setMax, 0, reason);
+                setDom(u, setMin, 0, Reason(reason, con_id));
+                setDom(u, setMax, 0, Reason(reason, con_id));
             }
         }
         else if (z_min > 0) {
             if (v_min == 0) {
                 // TODO Better explanation
-                setDom(v, setMin, 1, z.getMinLit());
+                setDom(v, setMin, 1, Reason(z.getMinLit(), con_id));
             }
             else if (v_max == 0) {
                 // TODO Better explanation
-                setDom(v, setMax, -1, z.getMinLit());
+                setDom(v, setMax, -1, Reason(z.getMinLit(), con_id));
             }
             else {
                 if (!propagate_xy_min(u, v, v_min, v_max, z_min, z_max))
@@ -187,11 +187,11 @@ public:
         else if (z_max < 0) {
             if (v_min == 0) {
                 // TODO Better explanation
-                setDom(v, setMin, 1, z.getMaxLit());
+                setDom(v, setMin, 1, Reason(z.getMaxLit(), con_id));
             }
             else if (v_max == 0) {
                 // TODO Better explanation
-                setDom(v, setMax, -1, z.getMaxLit());
+                setDom(v, setMax, -1, Reason(z.getMaxLit(), con_id));
             }
             else {
                 if (!propagate_xy_min(u, v, v_min, v_max, z_min, z_max))
@@ -246,7 +246,7 @@ public:
             (*reason)[2] = v.getMaxLit();
             (*reason)[3] = z.getMinLit();
             (*reason)[4] = z.getMaxLit();
-            setDom(u, setMin, (u_min_new == 0 ? 1 : u_min_new), reason);
+            setDom(u, setMin, (u_min_new == 0 ? 1 : u_min_new), Reason(reason, con_id));
         }
 
         return true;
@@ -276,7 +276,7 @@ public:
             (*reason)[2] = v.getMaxLit();
             (*reason)[3] = z.getMinLit();
             (*reason)[4] = z.getMaxLit();
-            setDom(u, setMax, (u_max_new == 0 ? -1 : u_max_new), reason);
+            setDom(u, setMax, (u_max_new == 0 ? -1 : u_max_new), Reason(reason, con_id));
         }
 
         return true;
@@ -309,29 +309,29 @@ public:
 		int64_t z_min = z.getMin(), z_max = z.getMax();
 		
 		// z >= x.min * y.min
-		setDom(z, setMin, x_min*y_min, x.getMinLit(), y.getMinLit());
+		setDom(z, setMin, x_min*y_min, Reason(x.getMinLit(), y.getMinLit(), con_id));
 		// z <= x.max * y.max
 		if (x_max * y_max < IntVar::max_limit)
-		setDom(z, setMax, x_max*y_max, x.getMaxLit(), y.getMaxLit());
+		setDom(z, setMax, x_max*y_max, Reason(x.getMaxLit(), y.getMaxLit(), con_id));
 
 		// x >= ceil(z.min / y.max)
 		if (y_max >= 1) {
-			setDom(x, setMin, (z_min+y_max-1)/y_max, y.getMaxLit(), z.getMinLit());
+			setDom(x, setMin, (z_min+y_max-1)/y_max, Reason(y.getMaxLit(), z.getMinLit(), con_id));
 		}
 
 		// x <= floor(z.max / y.min)
 		if (y_min >= 1) {
-			setDom(x, setMax, z_max/y_min, y.getMinLit(), z.getMaxLit());
+			setDom(x, setMax, z_max/y_min, Reason(y.getMinLit(), z.getMaxLit(), con_id));
 		}
 
 		// y >= ceil(z.min / x.max)
 		if (x_max >= 1) {
-			setDom(y, setMin, (z_min+x_max-1)/x_max, x.getMaxLit(), z.getMinLit());
+			setDom(y, setMin, (z_min+x_max-1)/x_max, Reason(x.getMaxLit(), z.getMinLit(), con_id));
 		}
 
 		// y <= floor(z.max / x.min)
 		if (x_min >= 1) {
-			setDom(y, setMax, z_max/x_min, x.getMinLit(), z.getMaxLit());
+			setDom(y, setMax, z_max/x_min, Reason(x.getMinLit(), z.getMaxLit(), con_id));
 		}
 
 		return true;
@@ -406,23 +406,23 @@ public:
 		int64_t z_min = z.getMin(), z_max = z.getMax();
 		
 		// z >= ceil(x.min / y.max)
-		setDom(z, setMin, (x_min+y_max-1)/y_max, x.getMinLit(), y.getMaxLit());
+		setDom(z, setMin, (x_min+y_max-1)/y_max, Reason(x.getMinLit(), y.getMaxLit(), con_id));
 		// z <= ceil(x.max / y.min)
-		setDom(z, setMax, (x_max+y_min-1)/y_min, x.getMaxLit(), y.getMinLit());
+		setDom(z, setMax, (x_max+y_min-1)/y_min, Reason(x.getMaxLit(), y.getMinLit(), con_id));
 
 		// x >= y.min * (z.min - 1) + 1
-		setDom(x, setMin, y_min*(z_min-1)+1, y.getMinLit(), z.getMinLit());
+		setDom(x, setMin, y_min*(z_min-1)+1, Reason(y.getMinLit(), z.getMinLit(), con_id));
 		// x <= y.max * z.max
-		setDom(x, setMax, y_max*z_max, y.getMaxLit(), z.getMaxLit());
+		setDom(x, setMax, y_max*z_max, Reason(y.getMaxLit(), z.getMaxLit(), con_id));
 
 		// y >= ceil(x.min / z.max)
 		if (z_max >= 1) {
-			setDom(y, setMin, (x_min+z_max-1)/z_max, x.getMinLit(), z.getMaxLit());
+			setDom(y, setMin, (x_min+z_max-1)/z_max, Reason(x.getMinLit(), z.getMaxLit(), con_id));
 		}
 
 		// y <= ceil(x.max / z.min-1) - 1
 		if (z_min >= 2) {
-			setDom(y, setMax, (x_max+z_min-2)/(z_min-1)-1, x.getMaxLit(), z.getMinLit());
+			setDom(y, setMax, (x_max+z_min-2)/(z_min-1)-1, Reason(x.getMaxLit(), z.getMinLit(), con_id));
 		}
 
 		return true;
@@ -483,14 +483,14 @@ public:
 	bool propagate() {
 		// make a less than or equal to min(max(b_i))
 
-		setDom(z, setMax, x.getMax(), x.getMaxLit());
-		setDom(z, setMax, y.getMax(), y.getMaxLit());
+		setDom(z, setMax, x.getMax(), Reason(x.getMaxLit(), con_id));
+		setDom(z, setMax, y.getMax(), Reason(y.getMaxLit(), con_id));
 
 		int64_t m = (x.getMin() < y.getMin() ? x.getMin() : y.getMin());
-		setDom(z, setMin, m, x.getFMinLit(m), y.getFMinLit(m));
+		setDom(z, setMin, m, Reason(x.getFMinLit(m), y.getFMinLit(m), con_id));
 
-		setDom(x, setMin, z.getMin(), z.getMinLit());
-		setDom(y, setMin, z.getMin(), z.getMinLit());
+		setDom(x, setMin, z.getMin(), Reason(z.getMinLit(), con_id));
+		setDom(y, setMin, z.getMin(), Reason(z.getMinLit(), con_id));
 
 		if (z.getMin() == x.getMax() || z.getMin() == y.getMax()) satisfied = true;
 

@@ -2028,13 +2028,13 @@ void mdd_decomp_dc(vec<IntVar*> xs, MDDTable& t, _MDD root)
         int pedge = node_edges[pi]; 
         cl.push(edgevars[pedge]);
       }
-      sat.addClause(cl);
+      sat.addClause(cl, engine.cur_con_id);
     } else {
       // If there are no incoming nodes, it must be the root.
       assert(ni == 1);
       vec<Lit> cl;
       cl.push(nodevars[ni]);
-      sat.addClause(cl);
+      sat.addClause(cl, engine.cur_con_id);
     }
 
     // (~c_0, ~c_1, ...) -> ~n
@@ -2047,13 +2047,13 @@ void mdd_decomp_dc(vec<IntVar*> xs, MDDTable& t, _MDD root)
         int cedge = node_edges[ci]; 
         cl.push(edgevars[cedge]);
       }
-      sat.addClause(cl);
+      sat.addClause(cl, engine.cur_con_id);
     } else {
       // Must be the T terminal.
       assert(ni == 0);
       vec<Lit> cl;
       cl.push(nodevars[ni]);
-      sat.addClause(cl);
+      sat.addClause(cl, engine.cur_con_id);
     }
   }
 
@@ -2071,12 +2071,12 @@ void mdd_decomp_dc(vec<IntVar*> xs, MDDTable& t, _MDD root)
         int cedge = val_edges[ci]; 
         cl.push(edgevars[cedge]);
       }
-      sat.addClause(cl);
+      sat.addClause(cl, engine.cur_con_id);
     } else {
       // Value is already false.
       vec<Lit> cl;
       cl.push(~vlit);
-      sat.addClause(cl);
+      sat.addClause(cl, engine.cur_con_id);
     }
   }
 }

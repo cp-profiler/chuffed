@@ -30,7 +30,7 @@ void bool_rel(BoolView x, BoolRelType t, BoolView y, BoolView z) {
 					}
 					ps.push(v[m].getLit(p));
 				}
-				if (l >= 2) sat.addClause(ps);
+				if (l >= 2) sat.addClause(ps, engine.cur_con_id);
 				u |= flags;
 			}
 		}
@@ -44,7 +44,7 @@ void bool_clause(vec<BoolView>& x, vec<BoolView>& y) {
 	vec<Lit> ps;
 	for (int i = 0; i < x.size(); i++) ps.push(x[i]);
 	for (int i = 0; i < y.size(); i++) ps.push(~y[i]);
-	sat.addClause(ps);
+	sat.addClause(ps, engine.cur_con_id);
 }
 
 // \/ x_i
@@ -67,7 +67,7 @@ void array_bool_or(vec<BoolView>& x, vec<BoolView>& y, BoolView z) {
 	ps.push(~z);
 	for (int i = 0; i < x.size(); i++) ps.push(x[i]);
 	for (int i = 0; i < y.size(); i++) ps.push(~y[i]);
-	sat.addClause(ps);
+	sat.addClause(ps, engine.cur_con_id);
 }
 
 void array_bool_or(vec<BoolView>& x, BoolView z) {

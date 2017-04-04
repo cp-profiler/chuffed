@@ -53,7 +53,7 @@ void table_GAC(vec<IntVar*>& x, vec<vec<int> >& t) {
 			assert(i+sup_off <= x[w]->getMax());
 			sup[i].push(x[w]->getLit(i+sup_off, 0));
 			Lit p = sup[i][0]; sup[i][0] = sup[i].last(); sup[i].last() = p;
-			sat.addClause(sup[i]);
+			sat.addClause(sup[i], engine.cur_con_id);
 		}
 	}
 }
