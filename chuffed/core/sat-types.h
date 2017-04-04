@@ -111,9 +111,9 @@ public:
     int* data3 = (int*)data;
     int* data4 = (int*)data;
     if (learnt) {
-      data2[newSize]   = data2[sz];
-      data3[newSize+1] = data3[sz+1];
-      data4[newSize+2] = data4[sz+2];
+      data2[newSize+1]   = data2[sz+1];
+      data3[newSize+2] = data3[sz+2];
+      data4[newSize] = data4[sz];
     }
     sz = newSize;
   }
@@ -124,14 +124,14 @@ public:
 	Lit          operator [] (int i) const   { return data[i]; }
 	operator const Lit* (void) const         { return data; }
 
-	float&       activity    ()              {     float* data2 = (float*)data; return data2[sz]; }
-	int&         rawActivity ()              { int* data3 = (int*)data; return data3[sz+1]; }
-	int& clauseID() { int* data4 = (int*)data; return data4[sz+2]; }
+	float&       activity    ()              {     float* data2 = (float*)data; return data2[sz+1]; }
+	int&         rawActivity ()              { int* data3 = (int*)data; return data3[sz+2]; }
+	int& clauseID() { int* data4 = (int*)data; return data4[sz]; }
 };
 
 template<class V>
 static Clause* Clause_new(const V& ps, bool learnt = false) {
-	int mem_size = sizeof(Clause) + ps.size() * sizeof(Lit) + (learnt ? 3 : 0) * sizeof(int);
+	int mem_size = sizeof(Clause) + ps.size() * sizeof(Lit) + (learnt ? 3 : 1) * sizeof(int);
 	void* mem = malloc(mem_size);
   Clause* newClause = new (mem) Clause(ps, learnt);
 	return newClause;
@@ -163,16 +163,11 @@ struct ChannelInfo {
 	unsigned int cons_type : 2;
 	unsigned int val_type  : 1;
 	int val;
-  int con_id;
-	ChannelInfo(unsigned int cid, unsigned int ct, unsigned int vt, int v, int flat_con_id)
-		: cons_id(cid), cons_type(ct), val_type(vt), val(v), con_id(flat_con_id) {
-      if(con_id==-500) {
-        std::cerr << "Oh oh!\n";
-      }
-    }
+	ChannelInfo(unsigned int cid, unsigned int ct, unsigned int vt, int v)
+		: cons_id(cid), cons_type(ct), val_type(vt), val(v) {}
 };
 
-const ChannelInfo ci_null(0,0,0,0,-1);
+const ChannelInfo ci_null(0,0,0,0);
 
 
 //=================================================================================================
@@ -203,6 +198,7 @@ public:
 
 class Reason {
 public:
+  enum special_cid { FROM_UNKNOWN = -1, FROM_SAT = -2, FROM_LIN = -3, FROM_VAR = -4, FROM_DECISION=-5, FROM_DEFAULT=-6, FROM_NULL=-7 };
 	union {
 		Clause *pt;                               // clause pointer
 		struct {
@@ -213,21 +209,29 @@ public:
 		int64_t a;
 	};
   int32_t cid;
-	Reason() : a(0),cid(-1) {}
-	Reason(Clause *c, int ci=-1) : pt(c), cid(ci) { 
+	Reason() : a(0),cid(FROM_DEFAULT) {}
+	Reason(Clause *c, int ci=FROM_NULL) : pt(c), cid(ci) { 
     if (sizeof(Clause *) == 4)
       d.d2 = 0;
+    //if(cid==FROM_NULL)
+    //  std::cerr << "cid==FROM_NULL:" <<  __LINE__ << "\n";
   }
 	Reason(int prop_id, int inf_id, int ci) : cid(ci) {
     d.type = 1; d.d1 = inf_id; d.d2 = prop_id; 
+    //if(cid==-1)
+    //  std::cerr << "cid==-1:" <<  __LINE__ << "\n";
   }
-	Reason(Lit p, int ci=-1) : cid(ci) {
+	Reason(Lit p, int ci=FROM_UNKNOWN) : cid(ci) {
     d.type = 2;
     d.d1 = toInt(p);
-    //if(pi==-1)
-    //  std::cerr << "Bad: " << cid << "\n";
+    //if(cid==FROM_SAT)
+    //  std::cerr << "cid==FROM_SAT:" <<  __LINE__ << "\n";
   }
-	Reason(Lit p, Lit q, int ci=-1) : cid(ci) { d.type = 3; d.d1 = toInt(p); d.d2 = toInt(q); }
+	Reason(Lit p, Lit q, int ci=FROM_UNKNOWN) : cid(ci) {
+    d.type = 3; d.d1 = toInt(p); d.d2 = toInt(q);
+    //if(cid==-1)
+    //  std::cerr << "cid==-1:" <<  __LINE__ << "\n";
+  }
 	bool operator == (Reason o) const { return a == o.a; }
 	bool isLazy() const { return d.type == 1; }
 };

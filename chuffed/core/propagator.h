@@ -132,8 +132,7 @@ static inline Clause* Reason_new(vec<Lit>& ps) {
 #define setDom(var, op, val, ...) do {           \
 	int64_t m_v = (val);                           \
 	if (var.op ## NotR(m_v)) {                     \
-		Reason m_r = NULL;                           \
-		if (so.lazy) new (&m_r) Reason(__VA_ARGS__); \
+		Reason m_r(__VA_ARGS__);                           \
 		if (!var.op(m_v, m_r)) return false;         \
 	}                                              \
 } while (0)

@@ -6,6 +6,7 @@
 #include <vector>
 #include <iterator>
 #include <sstream>
+#include <unordered_map>
 
 #include <chuffed/core/options.h>
 #include <chuffed/core/engine.h>
@@ -260,7 +261,7 @@ inline void Engine::makeDecision(DecInfo& di, int alt) {
             mostRecentLabel = ss.str();
         }
 #endif
-        ((IntVar*) di.var)->set(di.val, di.type ^ alt);
+        ((IntVar*) di.var)->set(di.val, di.type ^ alt, Reason(toLit(di.type^alt), Reason::FROM_DECISION));
     } else {
 #if DEBUG_VERBOSE
         std::cerr << "enqueing SAT literal: " << di.val << "^" << alt << " = " << (di.val ^ alt) << std::endl;
@@ -272,7 +273,8 @@ inline void Engine::makeDecision(DecInfo& di, int alt) {
             mostRecentLabel = ss.str();
         }
 #endif
-        sat.enqueue(toLit(di.val ^ alt));
+
+        sat.enqueue(toLit(di.val ^ alt), Reason(toLit(di.val ^ alt), Reason::FROM_DECISION));
     }
     if (so.ldsb && di.var && di.type == 1) ldsb.processDec(sat.trail.last()[0]);
     //	if (opt_var && di.var == opt_var && ((IntVar*) di.var)->isFixed()) printf("objective = %d\n", ((IntVar*) di.var)->getVal());
@@ -296,7 +298,7 @@ inline bool Engine::constrain() {
     /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      profilerConnector.restart("chuffed", restartCount);
+      profilerConnector.restart("chuffed", restartCount, "", so.execution_id);
     }
 #endif
   
@@ -489,13 +491,14 @@ RESULT Engine::search(const std::string& problemLabel) {
     restartCount = 0;
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      profilerConnector.restart(problemLabel, restartCount, variableListString);
+      profilerConnector.restart(problemLabel, restartCount, variableListString, so.execution_id);
     }
 #endif
   
     decisionLevelTip.push_back(1);
 
     /* boost::posix_time::ptime start_time = boost::posix_time::microsec_clock::universal_time(); */
+    std::unordered_map<int, std::set<int> > nogoodMap;
 
     while (true) {
         if (so.parallel && slave.checkMessages()) return RES_UNK;
@@ -558,7 +561,9 @@ RESULT Engine::search(const std::string& problemLabel) {
 #endif
                 return RES_GUN;
             }
-                    
+
+
+
 
             // Derive learnt clause and perform backjump
             if (so.lazy) {
@@ -569,13 +574,30 @@ RESULT Engine::search(const std::string& problemLabel) {
                     std::stringstream ss;
                     //                    ss << "out_learnt (interpreted):";
                     for (int i = 0 ; i < sat.out_learnt.size() ; i++)
-                        ss << " " << getLitString(toInt(sat.out_learnt[i])) << ":" << sat.reason[var(sat.out_learnt[i])].cid;
+                        ss << " " << getLitString(toInt(sat.out_learnt[i]));
+
+                    std::set<int> thisContrib;
+                    for (auto i : contributingNogoods) {
+                      if(i>=0) {
+                        auto it = nogoodMap.find(i);
+                        if(it != nogoodMap.end()) {
+                          std::set<int>& origContrib = it->second;
+                          for (auto j : origContrib) {
+                            thisContrib.insert(j);
+                          }
+                        }
+                      } else {
+                        thisContrib.insert(-i-1);
+                      }
+                    }
+                    nogoodMap[nodeid] = thisContrib;
+
                     std::stringstream contribString;
                     contribString << "{\"nogoods\":[";
-                    for (std::set<int>::const_iterator it = contributingNogoods.begin() ;
-                         it != contributingNogoods.end() ;
+                    for (std::set<int>::const_iterator it = thisContrib.begin() ;
+                         it != thisContrib.end() ;
                          it++) {
-                        contribString << (it == contributingNogoods.begin() ? "" : ",") << *it;
+                        contribString << (it == thisContrib.begin() ? "" : ",") << *it;
                     }
                     contribString << "],";
                     contribString << "\"blocks\":[";
@@ -594,7 +616,14 @@ RESULT Engine::search(const std::string& problemLabel) {
                         contribString << ((i==0) ? "" : ",") << adjustedLevel;
                         levels.insert(adjustedLevel);
                     }
-                    contribString << "]}";
+                    contribString << "],";
+               
+                    FlatZinc::FlatZincSpace *fzs = dynamic_cast<FlatZinc::FlatZincSpace*>(problem);
+                    contribString << "\"domains\":";
+                    fzs->printDomains(contribString);
+                    contribString << "}";
+
+                    //std::cerr << ss.str() << " ==== " << contribString.str() << "\n";
 
                     // Calculate block level distance.
                     int bld = levels.size();
@@ -669,7 +698,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                  profilerConnector.restart("chuffed", restartCount);
+                  profilerConnector.restart("chuffed", restartCount, "", so.execution_id);
                 }
 #endif
 
@@ -690,7 +719,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                  profilerConnector.restart("chuffed", restartCount);
+                  profilerConnector.restart("chuffed", restartCount, "", so.execution_id);
                 }
 #endif
 
@@ -840,7 +869,7 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
 
 #ifdef HAS_PROFILER
     if (so.use_profiler)
-      profilerConnector.connect(so.execution_id);
+      profilerConnector.connect();
 #endif
 
     /* if (so.debug) { */

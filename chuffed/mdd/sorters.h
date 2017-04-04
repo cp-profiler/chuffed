@@ -16,7 +16,7 @@ struct FullCmp {
     cl.push(~c);
     cl.push(a);
     cl.push(b);
-    sat.addClause(cl);
+    sat.addClause(cl,10000);
 
     sat.addClause(c, ~a);
     sat.addClause(c, ~b);
@@ -26,7 +26,7 @@ struct FullCmp {
     cl.push(d);
     cl.push(~a);
     cl.push(~b);
-    sat.addClause(cl);
+    sat.addClause(cl,10000);
 
     sat.addClause(~d,a);
     sat.addClause(~d,b);
@@ -44,7 +44,7 @@ struct HalfCmp {
     cl.push(d);
     cl.push(~a);
     cl.push(~b);
-    sat.addClause(cl);
+    sat.addClause(cl,10000);
   }
 };
 

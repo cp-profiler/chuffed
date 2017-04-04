@@ -132,16 +132,58 @@ void SAT::analyze(int nodeid, std::set<int>& contributingNogoods) {
     std::sort((Lit*) out_learnt + 2, (Lit*) out_learnt + out_learnt.size(), lit_sort);
   }
 
-#if DEBUG_VERBOSE
-  std::cerr << "out_learnt:";
-  for (int i = 0 ; i < out_learnt.size() ; i++)
-    std::cerr << " " << toInt(out_learnt[i]);
+//#if DEBUG_VERBOSE
+  //std::cerr << "out_learnt:";
+  //for (int i = 0 ; i < out_learnt.size() ; i++)
+  //  std::cerr << " " << toInt(out_learnt[i]);
+  //std::cerr << "\n";
+  //std::cerr << "out_learnt (interpreted):";
+  //
+  /*std::cerr << nodeid;
+  for (int i = 0 ; i < out_learnt.size() ; i++) {
+    Reason& r = reason[var(out_learnt[i])];
+    std::cerr << " " << getLitString(toInt(out_learnt[i]));
+
+    switch(r.cid) {
+      case Reason::FROM_SAT:
+        {
+          if(r.d.type==0) {
+            std::cerr << ":c" << r.pt->clauseID();
+          } else {
+            std::cerr << ":l" << r.d.d1;
+          }
+          break;
+        }
+
+      case Reason::FROM_VAR:
+        {
+          ChannelInfo& ci = c_info[var(out_learnt[i])];
+          std::cerr << ":v";
+          break;
+        }
+
+      case Reason::FROM_DECISION:
+        std::cerr << ":d";
+        break;
+
+      default:
+        {
+          if(r.cid <= -10) {
+            std::cerr << ":c" << -r.cid-10;
+          } else {
+            std::cerr << ":" << r.cid;
+          }
+        }
+    }
+  }
   std::cerr << "\n";
-  std::cerr << "out_learnt (interpreted):";
-  for (int i = 0 ; i < out_learnt.size() ; i++)
-    std::cerr << " " << litString[toInt(out_learnt[i])];
-  std::cerr << "\n";
-#endif
+
+  std::cerr << "Contributing: ";
+  for(auto i : contributingNogoods) {
+    std::cerr << " " << i;
+  }
+  std::cerr << "\n";*/
+//#endif
 
   Clause *c = Clause_new(out_learnt, true);
   c->activity() = cla_inc;
@@ -224,6 +266,17 @@ void SAT::getLearntClause(int nodeid, std::set<int>& contributingNogoods) {
       c.activity() += cla_inc;
       c.rawActivity() += 1;
       contributingNogoods.insert(c.clauseID());
+    } else {
+      if(last_reason.cid <= -10) {
+        contributingNogoods.insert(-last_reason.cid-10);
+      } else if (last_reason.cid == -2 && last_reason.d.type == 0) {
+        contributingNogoods.insert(last_reason.pt->clauseID());
+      } else if (last_reason.cid >= 0) {
+        contributingNogoods.insert(-last_reason.cid-1);
+      } else {
+        //if(last_reason.cid != Reason::FROM_DECISION)
+        //  std::cerr << " " << last_reason.cid;
+      }
     }
 
     /* if (so.debug) { */
@@ -257,36 +310,92 @@ void SAT::getLearntClause(int nodeid, std::set<int>& contributingNogoods) {
     }
 
     //if (so.debug) {
-    if (c.learnt) {
-      std::cerr << "L" << c.clauseID();
-    } else {
-      std::cerr << "U";
-    }
-    std::cerr << " ";
+    //if (c.learnt) {
+    //  std::cerr << "L" << c.clauseID();
+    //} else {
+    //  std::cerr << "U";
+    //}
+    //std::cerr << " ";
 
-    std::cerr << decisionLevel();
-    std::cerr << " ";
+    //std::cerr << decisionLevel();
+    //std::cerr << " ";
 
-    if (p == lit_Undef) {
-      std::cerr << "false";
-    } else {
-      Reason& r = reason[var(p)];
-      if(r.cid == -1) {
-        ChannelInfo& ci = c_info[var(p)];
-        r.cid = ci.con_id;
-      }
-      std::cerr << getLitString(toInt(p)) << ":" << r.cid;
-    }
-    std::cerr << " <-";
-    for (int i = (p == lit_Undef ? 0 : 1) ; i < c.size() ; i++) {
-      Reason& r = reason[var(c[i])];
-      if(r.cid == -1) {
-        ChannelInfo& ci = c_info[var(c[i])];
-        r.cid = ci.con_id;
-      }
-      std::cerr << " " << getLitString(toInt(~c[i])) << ":" << r.cid;
-    }
-    std::cerr << "\n";
+    //if (p == lit_Undef) {
+    //  std::cerr << "false";
+    //} else {
+    //  Reason& r = reason[var(p)];
+    //  std::cerr << getLitString(toInt(p));
+
+    //  switch(r.cid) {
+    //    case Reason::FROM_SAT:
+    //      {
+    //        if(r.d.type==0) {
+    //          std::cerr << ":c" << r.pt->clauseID();
+    //        } else {
+    //          std::cerr << ":l" << r.d.d1;
+    //        }
+    //        break;
+    //      }
+
+    //    case Reason::FROM_VAR:
+    //      {
+    //        ChannelInfo& ci = c_info[var(p)];
+    //        std::cerr << ":v";
+    //        break;
+    //      }
+    //    
+    //    case Reason::FROM_DECISION:
+    //      std::cerr << ":d";
+    //      break;
+    //    
+    //    default:
+    //      {
+    //        if(r.cid <= -10) {
+    //          std::cerr << ":c" << -r.cid-10;
+    //        } else {
+    //          std::cerr << ":" << r.cid;
+    //        }
+    //      }
+    //  };
+    //}
+    //std::cerr << " <-";
+    //for (int i = (p == lit_Undef ? 0 : 1) ; i < c.size() ; i++) {
+    //  Reason& r = reason[var(c[i])];
+    //  std::cerr << " " << getLitString(toInt(~c[i]));
+    //  switch(r.cid) {
+    //    case Reason::FROM_SAT:
+    //      {
+    //        if(r.d.type==0) {
+    //          std::cerr << ":c" << r.pt->clauseID();
+    //        } else {
+    //          std::cerr << ":l" << r.d.d1;
+    //        }
+    //        break;
+    //      }
+
+    //    case Reason::FROM_VAR:
+    //      {
+    //        ChannelInfo& ci = c_info[var(c[i])];
+    //        std::cerr << ":v";
+    //        break;
+    //      }
+
+    //    case Reason::FROM_DECISION:
+    //      std::cerr << ":d";
+    //      break;
+    //    
+    //    default:
+    //      {
+    //        if(r.cid <= -10) {
+    //          std::cerr << ":c" << -r.cid-10;
+    //        } else {
+    //          std::cerr << ":" << r.cid;
+    //        }
+    //      }
+    //  };
+
+    //}
+    //std::cerr << "\n";
     //}
 
     std::stringstream ss;

@@ -91,15 +91,21 @@ IntVarEL::IntVarEL(const IntVar& other) :
 // i.e. base_vlit = 2*(n - lit_min).
 
 void IntVarEL::initVLits() {
-	if (base_vlit != INT_MIN) return;
-	initVals();
-	if (lit_min == INT_MIN) { lit_min = min; lit_max = max; }
-	base_vlit = 2*(sat.nVars()-lit_min);
-	sat.newVar(lit_max-lit_min+1, ChannelInfo(var_id, 1, 0, lit_min, engine.cur_con_id));
-	for (int i = lit_min; i <= lit_max; i++) {
-		if (!indomain(i)) sat.cEnqueue(getNELit(i), NULL);
-	}
-	if (isFixed()) sat.cEnqueue(getEQLit(min), NULL);
+  if (base_vlit != INT_MIN) return;
+  initVals();
+  if (lit_min == INT_MIN) { lit_min = min; lit_max = max; }
+  base_vlit = 2*(sat.nVars()-lit_min);
+  sat.newVar(lit_max-lit_min+1, ChannelInfo(var_id, 1, 0, lit_min));
+  for (int i = lit_min; i <= lit_max; i++) {
+    if (!indomain(i)) {
+      Lit l = getNELit(i);
+      sat.cEnqueue(l, Reason(l, Reason::FROM_VAR));
+    }
+  }
+  if (isFixed()) {
+    Lit l = getEQLit(min);
+    sat.cEnqueue(l, Reason(l, Reason::FROM_VAR));
+  }
 }
 
 // Bounds literals are arranged similarly to the value/equality
@@ -128,16 +134,18 @@ void IntVarEL::initVLits() {
 // base_blit = 2*(n - lit_min) + 1.
 
 void IntVarEL::initBLits() {
-	if (base_blit != INT_MIN) return;
-	if (lit_min == INT_MIN) { lit_min = min; lit_max = max; }
-	base_blit = 2*(sat.nVars()-lit_min)+1;
-	sat.newVar(lit_max-lit_min+2, ChannelInfo(var_id, 1, 1, lit_min-1, engine.cur_con_id));
-	for (int i = lit_min; i <= min; i++) {
-          sat.cEnqueue(getGELit(i), NULL);
-        }
-	for (int i = max; i <= lit_max; i++) {
-          sat.cEnqueue(getLELit(i), NULL);
-        }
+  if (base_blit != INT_MIN) return;
+  if (lit_min == INT_MIN) { lit_min = min; lit_max = max; }
+  base_blit = 2*(sat.nVars()-lit_min)+1;
+  sat.newVar(lit_max-lit_min+2, ChannelInfo(var_id, 1, 1, lit_min-1));
+  for (int i = lit_min; i <= min; i++) {
+    Lit l = getGELit(i);
+    sat.cEnqueue(l, Reason(l, Reason::FROM_VAR));
+  }
+  for (int i = max; i <= lit_max; i++) {
+    Lit l = getLELit(i);
+    sat.cEnqueue(l, Reason(l, Reason::FROM_VAR));
+  }
 }
 
 void IntVarEL::setVLearnable(bool b) {

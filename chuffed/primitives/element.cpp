@@ -18,8 +18,8 @@ void array_bool_element(IntVar* _x, vec<bool>& a, BoolView y, int offset)	{
 		if (a[i]) ps2.push(x = i);
 		else      ps1.push(x = i);
 	}
-	sat.addClause(ps1);
-	sat.addClause(ps2);
+	sat.addClause(ps1, engine.cur_con_id);
+	sat.addClause(ps2, engine.cur_con_id);
 }
 
 //-----
@@ -66,7 +66,7 @@ void array_int_element(IntVar* _x, vec<int>& a, IntVar* _y, int offset) {
 		if (x.indomain(i)) pss[index].push(x = i);
 	}
 	for (int i = 0; i < pss.size(); i++) {
-		sat.addClause(pss[i]);
+		sat.addClause(pss[i], engine.cur_con_id);
 	}
 }
 
@@ -93,14 +93,14 @@ void array_var_bool_element(IntVar* _x, vec<BoolView>& a, BoolView y, int offset
 		sat.addClause(~d_i, ~a[i]);
 		vec<Lit> ps3(3), ps4(3);
 		ps3[0] = y; ps3[1] = ~a[i]; ps3[2] = (x != i);
-		sat.addClause(ps3);
+		sat.addClause(ps3, engine.cur_con_id);
 		ps4[0] = ~y; ps4[1] = a[i]; ps4[2] = (x != i);
-		sat.addClause(ps4);
+		sat.addClause(ps4, engine.cur_con_id);
 		ps1[i+1] = c_i;
 		ps2[i+1] = d_i;
 	}
-	sat.addClause(ps1);
-	sat.addClause(ps2);
+	sat.addClause(ps1, engine.cur_con_id);
+	sat.addClause(ps2, engine.cur_con_id);
 }
 
 //-----

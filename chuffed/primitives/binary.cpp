@@ -29,15 +29,15 @@ public:
 		int64_t y_min = y.getMin();
 
 		// Can finesse!!
-		if (R && x_max < y_min) setDom(r, setVal, 0, x.getMaxLit(), y.getMinLit());
+		if (R && x_max < y_min) setDom(r, setVal, 0, Reason(x.getMaxLit(), y.getMinLit(), con_id));
 
 		if (R && !r.isTrue()) return true;
 
 		// Finesses x's lower bound
-		if (R) setDom(x, setMin, y_min, y.getMinLit(), r.getValLit());
-		else   setDom(x, setMin, y_min, y.getMinLit());
-		if (R) setDom(y, setMax, x_max, x.getMaxLit(), r.getValLit());
-		else   setDom(y, setMax, x_max, x.getMaxLit());
+		if (R) setDom(x, setMin, y_min, Reason(y.getMinLit(), r.getValLit(), con_id));
+		else   setDom(x, setMin, y_min, Reason(y.getMinLit(), con_id));
+		if (R) setDom(y, setMax, x_max, Reason(x.getMaxLit(), r.getValLit(), con_id));
+		else   setDom(y, setMax, x_max, Reason(x.getMaxLit(), con_id));
 
 		if (x.getMin() >= y.getMax()) satisfied = true;
 
@@ -80,18 +80,18 @@ public:
 		if (R && r.isFalse()) return true;
 
 		if (x.isFixed() && y.isFixed() && x.getVal() == y.getVal()) {
-			setDom(r, setVal, 0, x.getValLit(), y.getValLit());
+			setDom(r, setVal, 0, Reason(x.getValLit(), y.getValLit(), con_id));
 		}
 
 		if (R && !r.isTrue()) return true;
 
 		if (x.isFixed()) {
-			if (R) setDom(y, remVal, x.getVal(), x.getValLit(), r.getValLit());
-			else   setDom(y, remVal, x.getVal(), x.getValLit());
+			if (R) setDom(y, remVal, x.getVal(), Reason(x.getValLit(), r.getValLit(), con_id));
+			else   setDom(y, remVal, x.getVal(), Reason(x.getValLit(), con_id));
 		}
 		if (y.isFixed()) {
-			if (R) setDom(x, remVal, y.getVal(), y.getValLit(), r.getValLit());
-			else   setDom(x, remVal, y.getVal(), y.getValLit());
+			if (R) setDom(x, remVal, y.getVal(), Reason(y.getValLit(), r.getValLit(), con_id));
+			else   setDom(x, remVal, y.getVal(), Reason(y.getValLit(), con_id));
 		}
 
 		return true;

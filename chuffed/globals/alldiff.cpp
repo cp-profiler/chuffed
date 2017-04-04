@@ -26,7 +26,7 @@ public:
 			for (int i = 0; i < range; i++) {
 				vec<Lit> ps(sz);
 				for (int j = 0; j < sz; j++) ps[j] = x[j].getLit(i, 1);
-				sat.addClause(ps);
+				sat.addClause(ps, con_id);
 			}
 		}
 	}

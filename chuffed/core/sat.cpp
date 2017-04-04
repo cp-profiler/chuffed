@@ -60,7 +60,7 @@ inline void SAT::untrailToPos(vec<Lit>& t, int p) {
 // main methods
 
 
-SAT::SAT() : prop_id(-2)
+SAT::SAT() : prop_id(Reason::FROM_SAT)
 	, lit_sort(trailpos)
 	, pushback_time(0)
 	, trail(1)
@@ -89,8 +89,8 @@ SAT::SAT() : prop_id(-2)
 	, learnt_len_el(10)
 	, learnt_len_occ(MAX_SHARE_LEN,learnt_len_el*1000/MAX_SHARE_LEN)
 {
-	newVar(); enqueue(Lit(0,1));
-	newVar(); enqueue(Lit(1,0));
+	newVar(); enqueue(Lit(0,1), Reason(Lit(0,1), prop_id));
+	newVar(); enqueue(Lit(1,0), Reason(Lit(1,0), prop_id));
 	temp_sc = (SClause*) malloc(TEMP_SC_LEN * sizeof(int));
 	short_expl = (Clause*) malloc(sizeof(Clause) + 3 * sizeof(Lit));
 	short_confl = (Clause*) malloc(sizeof(Clause) + 2 * sizeof(Lit));
@@ -115,7 +115,7 @@ int SAT::newVar(int n, ChannelInfo ci) {
 	watches  .growBy(n);
 	watches  .growBy(n);
 	assigns  .growBy(n, toInt(l_Undef));
-	reason   .growBy(n, NULL);
+	reason   .growBy(n, Reason(NULL, Reason::FROM_VAR));
 	trailpos .growBy(n, -1);
 	seen     .growBy(n, 0);
 	activity .growBy(n, 0);
@@ -189,7 +189,7 @@ void SAT::addClause(Lit p, Lit q) {
 	watches[toInt(~q)].push(p);
 }
 
-void SAT::addClause(vec<Lit>& ps, bool one_watch) {
+void SAT::addClause(vec<Lit>& ps, int con_id, bool one_watch) {
 	int i, j;
 	for (i = j = 0; i < ps.size(); i++) {
 		if (value(ps[i]) == l_True) return;
@@ -200,7 +200,9 @@ void SAT::addClause(vec<Lit>& ps, bool one_watch) {
 		assert(false);
 		TL_FAIL();
 	}
-	addClause(*Clause_new(ps), one_watch);
+  Clause* nc = Clause_new(ps);
+  nc->clauseID() = -con_id-1;
+	addClause(*nc, one_watch);
 }
 
 void SAT::addClause(Clause& c, bool one_watch) {
@@ -376,7 +378,7 @@ void SAT::cEnqueue(Lit p, Reason r) {
 	int v = var(p);
 	if (value(p) == l_False) {
 		if (so.lazy) {
-			if (r == NULL) {
+			if (r.d.type == 0 && r.pt == NULL) {
 				assert(decisionLevel() == 0);
 				setConfl();
 			} else {
@@ -458,7 +460,7 @@ bool SAT::propagate() {
 				*j++ = *i++;
 				Lit q = toLit(we.d.d2);
 				switch (toInt(value(q))) {
-					case 0: enqueue(q, Reason(~p, prop_id)); break;
+          case 0: enqueue(q, Reason(~p, prop_id)); break;
 					case -1:
 						setConfl(q, ~p);
 						qhead = trail.size();
@@ -504,7 +506,8 @@ bool SAT::propagate() {
 					qhead = trail.size();
 					while (i < end)	*j++ = *i++;
 				} else {
-					enqueue(c[0], Reason(&c, prop_id));
+          int id = c.clauseID()<0 ? -c.clauseID() : -10-c.clauseID();
+					enqueue(c[0], Reason(&c, id));
 				}
 				FoundWatch:;
 			}

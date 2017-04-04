@@ -809,7 +809,7 @@ CumulativeProp::filter_limit(ProfilePart * profile, int & i) {
 			// Transform literals to a clause
 			reason = get_reason_for_update(expl);
 		}
-		if (! limit->setMin(profile[i].level, reason)) {
+		if (! limit->setMin(profile[i].level, Reason(reason, con_id))) {
 			// Conflict occurred
 			return false;
 		}
@@ -928,7 +928,7 @@ CumulativeProp::time_table_filtering_lb(ProfilePart profile[], int low, int high
 			}
             nb_tt_filt++;
 			// Impose the new lower bound on start[task]
-			if (! start[task]->setMin(expl_end, reason)) {
+			if (! start[task]->setMin(expl_end, Reason(reason, con_id))) {
 				// Conflict occurred
 				return false;
 			}
@@ -995,7 +995,7 @@ CumulativeProp::time_table_filtering_ub(ProfilePart profile[], int low, int high
 			}
             nb_tt_filt++;
 			// Impose the new lower bound on start[task]
-			if (! start[task]->setMax(expl_begin - min_dur(task), reason)) {
+			if (! start[task]->setMax(expl_begin - min_dur(task), Reason(reason, con_id))) {
 				// Conflict occurred
 				return false;
 			}
@@ -1067,14 +1067,14 @@ CumulativeProp::tt_optional_task_propagation() {
                 nb_tt_filt++;
                 if (min_usage(i) <= 0) {
 			        // Impose the new upper bound on usage[i]
-			        if (! usage[i]->setMax(0, reason)) {
+			        if (! usage[i]->setMax(0, Reason(reason, con_id))) {
 			        	// Conflict occurred
 			        	return false;
 			        }
                 }
                 else {
 			        // Impose the new upper bound on usage[i]
-			        if (! dur[i]->setMax(0, reason)) {
+			        if (! dur[i]->setMax(0, Reason(reason, con_id))) {
 			        	// Conflict occurred
 			        	return false;
 			        }
@@ -1860,7 +1860,7 @@ CumulativeProp::ttef_update_bounds(
                 // Increment the filtering counter
                 nb_ttef_filt++;
 				// Update the lower bound
-				if (!start[task]->setMin(bound, reason)) {
+				if (!start[task]->setMin(bound, Reason(reason, con_id))) {
 					// Conflict occurred
 					return false;
 				}
@@ -1925,7 +1925,7 @@ CumulativeProp::ttef_update_bounds(
                 nb_ttef_filt++;
 				// Update the lower bound
                 // XXX Is min_dur correct?
-				if (!start[task]->setMax(bound - min_dur(task), reason)) {
+				if (!start[task]->setMax(bound - min_dur(task), Reason(reason, con_id))) {
 					// Conflict occurred
 					return false;
 				}
