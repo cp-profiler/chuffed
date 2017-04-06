@@ -1148,7 +1148,7 @@ CumulativeCalProp::filter_limit(ProfilePart * profile, int & i) {
 			// Transform literals to a clause
 			reason = get_reason_for_update(expl);
 		}
-		if (! limit->setMin(profile[i].level, reason)) {
+		if (! limit->setMin(profile[i].level, Reason(reason, con_id))) {
 			// Conflict occurred
 			return false;
 		}
@@ -1272,7 +1272,7 @@ CumulativeCalProp::time_table_filtering_lb(ProfilePart profile[], int low, int h
 			}
             nb_tt_filt++;
 			// Impose the new lower bound on start[task]
-			if (! start[task]->setMin(expl_end, reason)) {
+			if (! start[task]->setMin(expl_end, Reason(reason, con_id))) {
 				// Conflict occurred
 				return false;
 			}
@@ -1353,7 +1353,7 @@ CumulativeCalProp::time_table_filtering_ub(ProfilePart profile[], int low, int h
             nb_tt_filt++;
 			// Impose the new lower bound on start[task]
 			//if (! start[task]->setMax(expl_begin - min_dur(task), reason)) {
-			if (! start[task]->setMax(new_lst, reason)) {
+			if (! start[task]->setMax(new_lst, Reason(reason, con_id))) {
 				// Conflict occurred
 				return false;
 			}
@@ -2613,7 +2613,7 @@ CumulativeCalProp::ttef_update_bounds(
 				}
                 nb_ttef_filt++;
 				// Update the lower bound
-				if (!start[task]->setMin(bound, reason)) {
+				if (!start[task]->setMin(bound, Reason(reason, con_id))) {
 					// Conflict occurred
 					return false;
 				}
@@ -2637,7 +2637,7 @@ CumulativeCalProp::ttef_update_bounds(
 				fprintf(stderr, "Bounds Update UB: task = %d, old = %d, new = %d \n",task, lst_2[task], new_ub);
 #endif
                 nb_ttef_filt++;
-				if (!start[task]->setMax(new_ub, reason)) {
+				if (!start[task]->setMax(new_ub, Reason(reason, con_id))) {
 					// Conflict occurred
 					return false;
 				}

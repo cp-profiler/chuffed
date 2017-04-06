@@ -235,7 +235,7 @@ public:
 					}
 					assert(m == 2 + (hall_max - hall_min) * 2);
 				}
-				if (!x[maxsorted[i]].setMin(hall_max, r)) {
+				if (!x[maxsorted[i]].setMin(hall_max, Reason(r, con_id))) {
  //fprintf(stderr, "  failure\n");
 					return false;
 				}
@@ -298,7 +298,7 @@ public:
 					}
 					assert(m == 2 + (hall_max - hall_min) * 2);
 				}
-				if (!x[minsorted[i]].setMax(hall_min - 1, r)) {
+				if (!x[minsorted[i]].setMax(hall_min - 1, Reason(r, con_id))) {
  //fprintf(stderr, "  failure\n");
 					return false;
 				}
