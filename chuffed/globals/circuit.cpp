@@ -1034,7 +1034,7 @@ public:
                             (*r)[start+2+j] = x[varIndex].getLit(outsidebetween[j], 1); // x == k
                     }
                     
-                    result = x[bestCycle[0]].setMax(smallestIn-1, r);
+                    result = x[bestCycle[0]].setMax(smallestIn-1, Reason(r, con_id));
                         
                 }
                 else

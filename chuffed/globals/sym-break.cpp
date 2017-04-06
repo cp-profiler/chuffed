@@ -24,12 +24,12 @@ public:
 	bool propagate() {
 		if (y.getMax() < k) {
 			int64_t m = y.getMax()-1;
-			setDom(x, setMax, m, y.getMaxLit());
+			setDom(x, setMax, m, Reason(y.getMaxLit(), con_id));
 		}
 
 		int64_t m = x.getMin()+1;
 		if (m > k) m = k;
-		setDom(y, setMin, m, x.getMinLit());
+		setDom(y, setMin, m, Reason(x.getMinLit(), con_id));
 
 		return true;
 	}

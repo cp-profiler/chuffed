@@ -160,18 +160,18 @@ public:
 		if (fixed_index >= 0) {
 			assert(x.getVal() == fixed_index);
 			IntView<W>& f = a[fixed_index];
-			setDom(y, setMin, f.getMin(), f.getMinLit(), x.getValLit());
-			setDom(f, setMin, y.getMin(), y.getMinLit(), x.getValLit());
-			setDom(y, setMax, f.getMax(), f.getMaxLit(), x.getValLit());
-			setDom(f, setMax, y.getMax(), y.getMaxLit(), x.getValLit());
+			setDom(y, setMin, f.getMin(), Reason(f.getMinLit(), x.getValLit(), con_id));
+			setDom(f, setMin, y.getMin(), Reason(y.getMinLit(), x.getValLit(), con_id));
+			setDom(y, setMax, f.getMax(), Reason(f.getMaxLit(), x.getValLit(), con_id));
+			setDom(f, setMax, y.getMax(), Reason(y.getMaxLit(), x.getValLit(), con_id));
 			if (y.isFixed() && f.isFixed()) satisfied = true;
 			return true;
 		}
 
 		for (int i = 0; i < a.size(); i++) {
 			if (!x.indomain(i)) continue;
-			if (y.getMax() < a[i].getMin()) setDom(x, remVal, i, y.getMaxLit(), a[i].getMinLit());
-			if (y.getMin() > a[i].getMax()) setDom(x, remVal, i, y.getMinLit(), a[i].getMaxLit());
+			if (y.getMax() < a[i].getMin()) setDom(x, remVal, i, Reason(y.getMaxLit(), a[i].getMinLit(), con_id));
+			if (y.getMin() > a[i].getMax()) setDom(x, remVal, i, Reason(y.getMinLit(), a[i].getMaxLit(), con_id));
 		}
 
 		if (no_min_support) {
@@ -197,7 +197,7 @@ public:
 						(*r)[i+1] = x.indomain(i) ? a[i].getFMinLit(new_m) : x.getLit(i, 1);
 					}
 				}
-				if (!y.setMin(new_m, r)) return false;
+				if (!y.setMin(new_m, Reason(r, con_id))) return false;
 			}
 			no_min_support = false;
 		}
@@ -225,7 +225,7 @@ public:
 						(*r)[i+1] = x.indomain(i) ? a[i].getFMaxLit(new_m) : x.getLit(i, 1);
 					}
 				}
-				if (!y.setMax(new_m, r)) return false;
+				if (!y.setMax(new_m, Reason(r, con_id))) return false;
 			}
 			no_max_support = false;
 		}
@@ -346,13 +346,13 @@ public:
 		if (x.isFixed()) {
 			int v = x.getVal();
 			IntView<W>& f = a[v];
-			setDom(y, setMin, f.getMin(), f.getMinLit(), x.getValLit());
-			setDom(f, setMin, y.getMin(), y.getMinLit(), x.getValLit());
-			setDom(y, setMax, f.getMax(), f.getMaxLit(), x.getValLit());
-			setDom(f, setMax, y.getMax(), y.getMaxLit(), x.getValLit());
+			setDom(y, setMin, f.getMin(), Reason(f.getMinLit(), x.getValLit(), con_id));
+			setDom(f, setMin, y.getMin(), Reason(y.getMinLit(), x.getValLit(), con_id));
+			setDom(y, setMax, f.getMax(), Reason(f.getMaxLit(), x.getValLit(), con_id));
+			setDom(f, setMax, y.getMax(), Reason(y.getMaxLit(), x.getValLit(), con_id));
 			for (typename IntView<W>::iterator i = a[v].begin(); i != a[v].end(); ) {
 				int w = *i++;
-				if (!y.indomain(w) && !a[v].remVal(w, so.lazy ? Reason(~y.getLit(w, 0), ~x.getLit(v, 1)) : Reason()))
+				if (!y.indomain(w) && !a[v].remVal(w, so.lazy ? Reason(~y.getLit(w, 0), ~x.getLit(v, 1), con_id) : Reason()))
 					return false;
 			}
 		}

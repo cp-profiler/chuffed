@@ -69,7 +69,7 @@ public:
 					for (int i = 0; i < sz; i++) (*r)[i+1] = x[i].getFMinLit(m);
 //					for (int i = 0; i < sz; i++) (*r)[i+1] = x[i].getLit(m-1, 3);
 				}
-				if (!y.setMin(m, r)) return false;
+				if (!y.setMin(m, Reason(r, con_id))) return false;
 			}
 
 			// make b_i greater than or equal to min(a)
@@ -80,7 +80,7 @@ public:
 				(*r)[1] = y.getMinLit();
 			}				
 			for (int i = 0; i < sz; i++) {
-				if (x[i].setMinNotR(m)) if (!x[i].setMin(m, r)) return false;
+				if (x[i].setMinNotR(m)) if (!x[i].setMin(m, Reason(r, con_id))) return false;
 			}
 		}
 
