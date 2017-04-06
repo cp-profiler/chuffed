@@ -169,11 +169,11 @@ public:
 
 	// Conflict methods
 
-	void analyze(int nodeid, std::set<int>& contributingNogoods);
-	void getLearntClause(int nodeid, std::set<int>& contributingNogoods);
+	void analyze(int nodeid, std::set<int>& contributingNogoods, std::set<int>& nogoodReasons);
+	void getLearntClause(int nodeid, std::set<int>& contributingNogoods, std::set<int>& nogoodReasons);
 	int findConflictLevel();
-	void explainUnlearnable(std::set<int>& contributingNogoods);
-	void explainToExhaustion(std::set<int>& contributingNogoods);
+	void explainUnlearnable(std::set<int>& contributingNogoods, std::set<int>& nogoodReasons);
+	void explainToExhaustion(std::set<int>& contributingNogoods, std::set<int>& nogoodReasons);
 	void clearSeen();
 	int  findBackTrackLevel();
 
