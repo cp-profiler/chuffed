@@ -98,7 +98,7 @@ Clause* SAT::getConfl(Reason& r, Lit p) {
   }
 }
 
-void SAT::analyze(int nodeid, std::set<int>& contributingNogoods) {
+void SAT::analyze(int nodeid, std::set<int>& contributingNogoods, std::set<int>& nogoodReasons) {
   avg_depth += 0.01*(decisionLevel()-avg_depth);
 
   /* if (so.debug) { */
@@ -116,10 +116,10 @@ void SAT::analyze(int nodeid, std::set<int>& contributingNogoods) {
   checkConflict();
   varDecayActivity();
   claDecayActivity();
-  getLearntClause(nodeid, contributingNogoods);
-  explainUnlearnable(contributingNogoods);
+  getLearntClause(nodeid, contributingNogoods, nogoodReasons);
+  explainUnlearnable(contributingNogoods, nogoodReasons);
   if (so.exhaustive_activity)
-    explainToExhaustion(contributingNogoods);
+    explainToExhaustion(contributingNogoods, nogoodReasons);
   clearSeen();
 
   int btlevel = findBackTrackLevel();
@@ -229,7 +229,7 @@ void SAT::analyze(int nodeid, std::set<int>& contributingNogoods) {
 }
 
 
-void SAT::getLearntClause(int nodeid, std::set<int>& contributingNogoods) {
+void SAT::getLearntClause(int nodeid, std::set<int>& contributingNogoods, std::set<int>& nogoodReasons) {
   Lit p = lit_Undef;
   int pathC = 0;
   int clevel = findConflictLevel();
@@ -266,16 +266,17 @@ void SAT::getLearntClause(int nodeid, std::set<int>& contributingNogoods) {
       c.activity() += cla_inc;
       c.rawActivity() += 1;
       contributingNogoods.insert(c.clauseID());
+      nogoodReasons.insert(c.clauseID());
     } else {
       if(last_reason.cid <= -10) {
-        contributingNogoods.insert(-last_reason.cid-10);
+        nogoodReasons.insert(-last_reason.cid-10);
       } else if (last_reason.cid == -2 && last_reason.d.type == 0) {
-        contributingNogoods.insert(last_reason.pt->clauseID());
+        nogoodReasons.insert(last_reason.pt->clauseID());
       } else if (last_reason.cid >= 0) {
-        contributingNogoods.insert(-last_reason.cid-1);
+        nogoodReasons.insert(-last_reason.cid-1);
       } else {
-        //if(last_reason.cid != Reason::FROM_DECISION)
-        //  std::cerr << " " << last_reason.cid;
+        //if(last_reason.cid == Reason::FROM_NULL)
+        //  std::cerr << "NULL\n";
       }
     }
 
@@ -508,7 +509,7 @@ int SAT::findConflictLevel() {
   return clevel;
 }
 
-void SAT::explainUnlearnable(std::set<int>& contributingNogoods) {
+void SAT::explainUnlearnable(std::set<int>& contributingNogoods, std::set<int>& nogoodReasons) {
   pushback_time -= wallClockTime();
 
   vec<Lit> removed;
@@ -537,7 +538,7 @@ void SAT::explainUnlearnable(std::set<int>& contributingNogoods) {
   pushback_time += wallClockTime();
 }
 
-void SAT::explainToExhaustion(std::set<int>& contributingNogoods) {
+void SAT::explainToExhaustion(std::set<int>& contributingNogoods, std::set<int>& nogoodReasons) {
   vec<char> oldseen(seen);
   vec<Lit> old_out_learnt(out_learnt);
   vec<int> old_out_learnt_level(out_learnt_level);
@@ -559,6 +560,19 @@ void SAT::explainToExhaustion(std::set<int>& contributingNogoods) {
     if (c.learnt) {
       c.rawActivity() += 1;
       contributingNogoods.insert(c.clauseID());
+      nogoodReasons.insert(c.clauseID());
+    } else {
+      Reason& r = reason[var(p)];
+      if(r.cid <= -10) {
+        nogoodReasons.insert(-r.cid-10);
+      } else if (r.cid == -2 && r.d.type == 0) {
+        nogoodReasons.insert(r.pt->clauseID());
+      } else if (r.cid >= 0) {
+        nogoodReasons.insert(-r.cid-1);
+      } else {
+        //if(r.cid != Reason::FROM_DECISION)
+        //  std::cerr << " " << r.cid;
+      }
     }
 
     out_learnt[i] = out_learnt.last();

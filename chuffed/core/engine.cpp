@@ -562,65 +562,86 @@ RESULT Engine::search(const std::string& problemLabel) {
                 return RES_GUN;
             }
 
-
-
-
             // Derive learnt clause and perform backjump
             if (so.lazy) {
                 std::set<int> contributingNogoods;
-                sat.analyze(nodeid, contributingNogoods);
+                std::set<int> nogoodReasons;
+                sat.analyze(nodeid, contributingNogoods, nogoodReasons);
+
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
                     std::stringstream ss;
-                    //                    ss << "out_learnt (interpreted):";
                     for (int i = 0 ; i < sat.out_learnt.size() ; i++)
                         ss << " " << getLitString(toInt(sat.out_learnt[i]));
 
-                    std::set<int> thisContrib;
-                    for (auto i : contributingNogoods) {
-                      if(i>=0) {
-                        auto it = nogoodMap.find(i);
-                        if(it != nogoodMap.end()) {
-                          std::set<int>& origContrib = it->second;
-                          for (auto j : origContrib) {
-                            thisContrib.insert(j);
+                    std::stringstream contribString;
+                    contribString << "{";
+
+                    {
+                      contribString << "\"nogoods\":[";
+                      for (std::set<int>::const_iterator it = contributingNogoods.begin();
+                           it != contributingNogoods.end(); it++) {
+                          contribString << (it == contributingNogoods.begin() ? "" : ",") << *it;
+                      }
+                      contribString << "]";
+                    }
+
+                    {
+                      std::set<int> thisContrib;
+                      for (auto i : nogoodReasons) {
+                        if(i>=0) {
+                          auto it = nogoodMap.find(i);
+                          if(it != nogoodMap.end()) {
+                            std::set<int>& origContrib = it->second;
+                            for (auto j : origContrib) {
+                              thisContrib.insert(j);
+                            }
                           }
+                        } else {
+                          thisContrib.insert(-i-1);
                         }
-                      } else {
-                        thisContrib.insert(-i-1);
+                      }
+
+                      std::cout << "%r";
+                      nogoodMap[nodeid] = thisContrib;
+                      contribString << ",\"reasons\":[";
+                      for (std::set<int>::const_iterator it = thisContrib.begin();
+                           it != thisContrib.end(); it++) {
+                          contribString << (it == thisContrib.begin() ? "" : ",") << *it;
+                          std::cout << " "<< *it;
+                      }
+                      std::cout << std::endl;
+                    }
+
+                    contribString << "]";
+                  
+                    std::set<int> levels;
+                    {
+                      contribString << ",\"blocks\":[";
+                      // We leave duplicates in the list of blocks, so
+                      // that the profiler can make use of them.
+                      for (int i = 0 ; i < sat.out_learnt_level.size() ; i++) {
+                          int rawLevel = sat.out_learnt_level[i];
+                          // We increment the "raw level" by one,
+                          // because internally (on the trail) the first
+                          // decision level -- that is, after a single
+                          // search decision has been made -- is called
+                          // zero.  We would rather that it be called
+                          // one, to equal the number of decisions made.
+                          int adjustedLevel = rawLevel + 1;
+                          contribString << ((i==0) ? "" : ",") << adjustedLevel;
+                          levels.insert(adjustedLevel);
+                      }
+                      contribString << "]";
+                    }
+               
+                    {
+                      if(so.send_domains) {
+                        FlatZinc::FlatZincSpace *fzs = dynamic_cast<FlatZinc::FlatZincSpace*>(problem);
+                        contribString << ",\"domains\":";
+                        fzs->printDomains(contribString);
                       }
                     }
-                    nogoodMap[nodeid] = thisContrib;
-
-                    std::stringstream contribString;
-                    contribString << "{\"nogoods\":[";
-                    for (std::set<int>::const_iterator it = thisContrib.begin() ;
-                         it != thisContrib.end() ;
-                         it++) {
-                        contribString << (it == thisContrib.begin() ? "" : ",") << *it;
-                    }
-                    contribString << "],";
-                    contribString << "\"blocks\":[";
-                    // We leave duplicates in the list of blocks, so
-                    // that the profiler can make use of them.
-                    std::set<int> levels;
-                    for (int i = 0 ; i < sat.out_learnt_level.size() ; i++) {
-                        int rawLevel = sat.out_learnt_level[i];
-                        // We increment the "raw level" by one,
-                        // because internally (on the trail) the first
-                        // decision level -- that is, after a single
-                        // search decision has been made -- is called
-                        // zero.  We would rather that it be called
-                        // one, to equal the number of decisions made.
-                        int adjustedLevel = rawLevel + 1;
-                        contribString << ((i==0) ? "" : ",") << adjustedLevel;
-                        levels.insert(adjustedLevel);
-                    }
-                    contribString << "],";
-               
-                    FlatZinc::FlatZincSpace *fzs = dynamic_cast<FlatZinc::FlatZincSpace*>(problem);
-                    contribString << "\"domains\":";
-                    fzs->printDomains(contribString);
                     contribString << "}";
 
                     //std::cerr << ss.str() << " ==== " << contribString.str() << "\n";
