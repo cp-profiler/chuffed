@@ -602,15 +602,15 @@ RESULT Engine::search(const std::string& problemLabel) {
                         }
                       }
 
-                      std::cout << "%r";
+                      if(so.print_reasons) std::cout << "%r";
                       nogoodMap[nodeid] = thisContrib;
                       contribString << ",\"reasons\":[";
                       for (std::set<int>::const_iterator it = thisContrib.begin();
                            it != thisContrib.end(); it++) {
                           contribString << (it == thisContrib.begin() ? "" : ",") << *it;
-                          std::cout << " "<< *it;
+                          if(so.print_reasons) std::cout << " "<< *it;
                       }
-                      std::cout << std::endl;
+                      if(so.print_reasons) std::cout << std::endl;
                     }
 
                     contribString << "]";

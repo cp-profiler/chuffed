@@ -67,6 +67,7 @@ public:
         bool print_variable_list;
         bool send_skipped;               // Send skipped nodes?
         bool send_domains;               // Compute and send variable domains
+        bool print_reasons;               // Compute and send variable domains
         std::string filter_domains;
         bool learnt_stats;
         bool learnt_stats_nogood;
