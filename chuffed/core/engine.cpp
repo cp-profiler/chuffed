@@ -38,7 +38,7 @@ Tint trail_inc;
 int nextnodeid = 0;
 
 #ifdef HAS_PROFILER
-Profiling::Connector profilerConnector(6565);
+Profiling::Connector* profilerConnector(nullptr);
 #endif
 
 std::map<IntVar*, string> intVarString;
@@ -52,7 +52,7 @@ std::ofstream node_stream;
 
 #ifdef HAS_PROFILER
 bool doProfiling() {
-    return so.print_nodes || profilerConnector.connected();
+    return so.print_nodes || (profilerConnector != nullptr && profilerConnector->connected());
 }
 
 void sendNode(Node& node) {
@@ -298,7 +298,7 @@ inline bool Engine::constrain() {
     /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      profilerConnector.restart("chuffed", restartCount, "", so.execution_id);
+      profilerConnector->restart("chuffed", restartCount, "", so.execution_id);
     }
 #endif
   
@@ -491,7 +491,7 @@ RESULT Engine::search(const std::string& problemLabel) {
     restartCount = 0;
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      profilerConnector.restart(problemLabel, restartCount, variableListString, so.execution_id);
+      profilerConnector->restart(problemLabel, restartCount, variableListString, so.execution_id);
     }
 #endif
   
@@ -555,7 +555,7 @@ RESULT Engine::search(const std::string& problemLabel) {
             if (decisionLevel() == 0) {
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                    sendNode(profilerConnector.createNode(nodeid, parent, myalt, 0, FAILED).set_time(timeus).set_label(mostRecentLabel).set_restart_id(restartCount).set_decision_level(previousDecisionLevel));
+                    sendNode(profilerConnector->createNode(nodeid, parent, myalt, 0, FAILED).set_time(timeus).set_label(mostRecentLabel).set_restart_id(restartCount).set_decision_level(previousDecisionLevel));
                     mostRecentLabel = "";
                 }
 #endif
@@ -666,7 +666,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                     int backjumpDistance = previousDecisionLevel - decisionLevel();
 
                     if (doProfiling()) {
-                      sendNode(profilerConnector.createNode(nodeid, parent, myalt, 0, FAILED).set_time(timeus).set_label(mostRecentLabel).set_nogood(ss.str()).set_nogood_bld(bld).set_uses_assumptions(usesAssumptions).set_restart_id(restartCount).set_info(contribString.str()).set_backjump_distance(backjumpDistance).set_decision_level(previousDecisionLevel));
+                      sendNode(profilerConnector->createNode(nodeid, parent, myalt, 0, FAILED).set_time(timeus).set_label(mostRecentLabel).set_nogood(ss.str()).set_nogood_bld(bld).set_uses_assumptions(usesAssumptions).set_restart_id(restartCount).set_info(contribString.str()).set_backjump_distance(backjumpDistance).set_decision_level(previousDecisionLevel));
                     }
                     mostRecentLabel = "";
 #if DEBUG_VERBOSE
@@ -677,7 +677,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                     std::cerr << "\n";
 #endif
 
-                    rewindPaths(profilerConnector, previousDecisionLevel, decisionLevel(), (so.send_skipped ? REWIND_SEND_SKIPPED : REWIND_OMIT_SKIPPED), timeus);
+                    rewindPaths(*profilerConnector, previousDecisionLevel, decisionLevel(), (so.send_skipped ? REWIND_SEND_SKIPPED : REWIND_OMIT_SKIPPED), timeus);
                                 
                     std::stringstream ss2;
                     /* ss2 << "-> "; */
@@ -693,7 +693,7 @@ RESULT Engine::search(const std::string& problemLabel) {
             }	else {
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                    sendNode(profilerConnector.createNode(nodeid, parent, myalt, 0, FAILED).set_time(timeus).set_label(mostRecentLabel).set_restart_id(restartCount).set_decision_level(previousDecisionLevel));
+                    sendNode(profilerConnector->createNode(nodeid, parent, myalt, 0, FAILED).set_time(timeus).set_label(mostRecentLabel).set_restart_id(restartCount).set_decision_level(previousDecisionLevel));
                     mostRecentLabel = "";
                 }
 #endif
@@ -702,7 +702,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 sat.btToLevel(decisionLevel()-1);
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                    rewindPaths(profilerConnector, previousDecisionLevel, decisionLevel(), (so.send_skipped ? REWIND_SEND_SKIPPED : REWIND_OMIT_SKIPPED), timeus);
+                    rewindPaths(*profilerConnector, previousDecisionLevel, decisionLevel(), (so.send_skipped ? REWIND_SEND_SKIPPED : REWIND_OMIT_SKIPPED), timeus);
                 }
 #endif
                 makeDecision(di, 1);
@@ -719,7 +719,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                  profilerConnector.restart("chuffed", restartCount, "", so.execution_id);
+                  profilerConnector->restart("chuffed", restartCount, "", so.execution_id);
                 }
 #endif
 
@@ -740,7 +740,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                  profilerConnector.restart("chuffed", restartCount, "", so.execution_id);
+                  profilerConnector->restart("chuffed", restartCount, "", so.execution_id);
                 }
 #endif
 
@@ -801,7 +801,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                     /* s << "\""; */
 #ifdef HAS_PROFILER
                     if (doProfiling()) {
-                      sendNode(profilerConnector.createNode(nodeid, parent, myalt, 0, SOLVED)
+                      sendNode(profilerConnector->createNode(nodeid, parent, myalt, 0, SOLVED)
                                .set_time(timeus)
                                .set_label(mostRecentLabel)
                                .set_info(s.str())
@@ -812,7 +812,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 } else {
 #ifdef HAS_PROFILER
                     if (doProfiling()) {
-                      sendNode(profilerConnector.createNode(nodeid, parent, myalt, 0, SOLVED)
+                      sendNode(profilerConnector->createNode(nodeid, parent, myalt, 0, SOLVED)
                                .set_time(timeus)
                                .set_label(mostRecentLabel)
                                .set_decision_level(previousDecisionLevel)
@@ -853,7 +853,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                     }
                 }
 
-                sendNode(profilerConnector.createNode(nodeid, parent, myalt, 2, BRANCH)
+                sendNode(profilerConnector->createNode(nodeid, parent, myalt, 2, BRANCH)
                                           .set_time(timeus)
                                           .set_label(mostRecentLabel)
                                           .set_info(info)
@@ -889,8 +889,11 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
     base_memory = memUsed();
 
 #ifdef HAS_PROFILER
-    if (so.use_profiler)
-      profilerConnector.connect();
+    if ((so.use_profiler || so.print_nodes) && profilerConnector == nullptr)
+      profilerConnector = new Profiling::Connector(so.profiler_port);
+    if (so.use_profiler) {
+      profilerConnector->connect();
+    }
 #endif
 
     /* if (so.debug) { */
@@ -937,8 +940,8 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
     }
 
 #ifdef HAS_PROFILER
-    profilerConnector.done();
-    profilerConnector.disconnect();
+    profilerConnector->done();
+    profilerConnector->disconnect();
 #endif
 
     if (so.verbosity >= 1) printStats();
