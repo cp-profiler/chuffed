@@ -45,72 +45,17 @@ find_package(Threads)
 
 include_directories("chuffed")
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
-  if(OWN_PROTOBUF)
-    set(PROTOBUF_LIBS protobuf)
-  else()
-    include_directories("submodules/cp-profiler-integration/protobuf")
-    if (WIN32)
-      include_directories("submodules/cp-profiler-integration/protobuf/config_win")
-    else()
-      include_directories("submodules/cp-profiler-integration/protobuf/config_unix")
-    endif()
-  endif()
-else()
-  message("Configuring without CP Profiler support.")
-endif()
-
 include_directories(".")
 include_directories(${CMAKE_BINARY_DIR})
 if (WIN32)
   add_definitions(-DYY_NO_UNISTD_H)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
-
-  if(!OWN_PROTOBUF)
-  set(CHUFFED_PROFILER_SOURCES
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/compiler/importer.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/compiler/parser.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/descriptor.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/descriptor.pb.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/descriptor_database.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/dynamic_message.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/extension_set.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/extension_set_heavy.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/generated_message_reflection.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/generated_message_util.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/coded_stream.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/gzip_stream.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/printer.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/strtod.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/tokenizer.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/zero_copy_stream.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/zero_copy_stream_impl.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/io/zero_copy_stream_impl_lite.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/message.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/message_lite.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/reflection_ops.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/repeated_field.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/service.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/atomicops_internals_x86_gcc.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/atomicops_internals_x86_msvc.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/common.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/once.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/stringprintf.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/structurally_valid.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/strutil.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/stubs/substitute.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/text_format.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/unknown_field_set.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/wire_format.cc
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/wire_format_lite.cc
-    )
-  endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.hh")
 
   set(CHUFFED_PROFILER_SOURCES
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/connector.cpp
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.pb.cpp
+    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.cpp
     ${CHUFFED_PROFILER_SOURCES}
   )
 
@@ -208,7 +153,7 @@ chuffed/core/propagator.h
 ${CHUFFED_PROFILER_SOURCES}
 )
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
+if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.hh")
   target_compile_definitions(chuffed PRIVATE HAS_PROFILER)
 endif()
 
@@ -254,7 +199,7 @@ chuffed/flatzinc/ast.h
 )
 
 add_executable(fzn-chuffed chuffed/flatzinc/fzn-chuffed.cpp)
-target_link_libraries(fzn-chuffed chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT} ${PROTOBUF_LIBS})
+target_link_libraries(fzn-chuffed chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(bibd EXCLUDE_FROM_ALL chuffed/examples/bibd.cpp)
 target_link_libraries(bibd chuffed_fzn chuffed ${CMAKE_THREAD_LIBS_INIT})
