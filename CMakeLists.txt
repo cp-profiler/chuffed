@@ -68,7 +68,7 @@ endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf")
 
-  if(!OWN_PROTOBUF)
+  if(NOT OWN_PROTOBUF)
   set(CHUFFED_PROFILER_SOURCES
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/compiler/importer.cc
     ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/protobuf/google/protobuf/compiler/parser.cc
