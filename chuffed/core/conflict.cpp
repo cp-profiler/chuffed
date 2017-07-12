@@ -126,64 +126,12 @@ void SAT::analyze(int nodeid, std::set<int>& contributingNogoods, std::set<int>&
   back_jumps += decisionLevel()-1-btlevel;
   //  fprintf(stderr, "btlevel = %d\n", btlevel);
   btToLevel(btlevel);
-  confl = NULL;
 
   if (so.sort_learnt_level && out_learnt.size() >= 4) {
     std::sort((Lit*) out_learnt + 2, (Lit*) out_learnt + out_learnt.size(), lit_sort);
   }
 
-//#if DEBUG_VERBOSE
-  //std::cerr << "out_learnt:";
-  //for (int i = 0 ; i < out_learnt.size() ; i++)
-  //  std::cerr << " " << toInt(out_learnt[i]);
-  //std::cerr << "\n";
-  //std::cerr << "out_learnt (interpreted):";
-  //
-  /*std::cerr << nodeid;
-  for (int i = 0 ; i < out_learnt.size() ; i++) {
-    Reason& r = reason[var(out_learnt[i])];
-    std::cerr << " " << getLitString(toInt(out_learnt[i]));
-
-    switch(r.cid) {
-      case Reason::FROM_SAT:
-        {
-          if(r.d.type==0) {
-            std::cerr << ":c" << r.pt->clauseID();
-          } else {
-            std::cerr << ":l" << r.d.d1;
-          }
-          break;
-        }
-
-      case Reason::FROM_VAR:
-        {
-          ChannelInfo& ci = c_info[var(out_learnt[i])];
-          std::cerr << ":v";
-          break;
-        }
-
-      case Reason::FROM_DECISION:
-        std::cerr << ":d";
-        break;
-
-      default:
-        {
-          if(r.cid <= -10) {
-            std::cerr << ":c" << -r.cid-10;
-          } else {
-            std::cerr << ":" << r.cid;
-          }
-        }
-    }
-  }
-  std::cerr << "\n";
-
-  std::cerr << "Contributing: ";
-  for(auto i : contributingNogoods) {
-    std::cerr << " " << i;
-  }
-  std::cerr << "\n";*/
-//#endif
+  confl = NULL;
 
   Clause *c = Clause_new(out_learnt, true);
   c->activity() = cla_inc;
@@ -309,95 +257,6 @@ void SAT::getLearntClause(int nodeid, std::set<int>& contributingNogoods, std::s
         implication_stream << " " << getLitString(toInt(~c[i]));
       implication_stream << "\n";
     }
-
-    //if (so.debug) {
-    //if (c.learnt) {
-    //  std::cerr << "L" << c.clauseID();
-    //} else {
-    //  std::cerr << "U";
-    //}
-    //std::cerr << " ";
-
-    //std::cerr << decisionLevel();
-    //std::cerr << " ";
-
-    //if (p == lit_Undef) {
-    //  std::cerr << "false";
-    //} else {
-    //  Reason& r = reason[var(p)];
-    //  std::cerr << getLitString(toInt(p));
-
-    //  switch(r.cid) {
-    //    case Reason::FROM_SAT:
-    //      {
-    //        if(r.d.type==0) {
-    //          std::cerr << ":c" << r.pt->clauseID();
-    //        } else {
-    //          std::cerr << ":l" << r.d.d1;
-    //        }
-    //        break;
-    //      }
-
-    //    case Reason::FROM_VAR:
-    //      {
-    //        ChannelInfo& ci = c_info[var(p)];
-    //        std::cerr << ":v";
-    //        break;
-    //      }
-    //    
-    //    case Reason::FROM_DECISION:
-    //      std::cerr << ":d";
-    //      break;
-    //    
-    //    default:
-    //      {
-    //        if(r.cid <= -10) {
-    //          std::cerr << ":c" << -r.cid-10;
-    //        } else {
-    //          std::cerr << ":" << r.cid;
-    //        }
-    //      }
-    //  };
-    //}
-    //std::cerr << " <-";
-    //for (int i = (p == lit_Undef ? 0 : 1) ; i < c.size() ; i++) {
-    //  Reason& r = reason[var(c[i])];
-    //  std::cerr << " " << getLitString(toInt(~c[i]));
-    //  switch(r.cid) {
-    //    case Reason::FROM_SAT:
-    //      {
-    //        if(r.d.type==0) {
-    //          std::cerr << ":c" << r.pt->clauseID();
-    //        } else {
-    //          std::cerr << ":l" << r.d.d1;
-    //        }
-    //        break;
-    //      }
-
-    //    case Reason::FROM_VAR:
-    //      {
-    //        ChannelInfo& ci = c_info[var(c[i])];
-    //        std::cerr << ":v";
-    //        break;
-    //      }
-
-    //    case Reason::FROM_DECISION:
-    //      std::cerr << ":d";
-    //      break;
-    //    
-    //    default:
-    //      {
-    //        if(r.cid <= -10) {
-    //          std::cerr << ":c" << -r.cid-10;
-    //        } else {
-    //          std::cerr << ":" << r.cid;
-    //        }
-    //      }
-    //  };
-
-    //}
-    //std::cerr << "\n";
-    //}
 
     std::stringstream ss;
     for (int j = (p == lit_Undef) ? 0 : 1; j < c.size(); j++) {
