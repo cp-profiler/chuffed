@@ -296,7 +296,7 @@ inline bool Engine::constrain() {
     opt_time = wallClockTime() - start_time - init_time;
 
     sat.btToLevel(0);
-    restartCount++;
+    //restartCount++;
     nodepath.resize(0);
     altpath.resize(0);
     /* nextnodeid = 0; */
@@ -734,7 +734,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 if (so.verbosity >= 2)
                   std::cerr << "restarting and switching to VSIDS\n";
                 sat.btToLevel(0);
-                restartCount++;
+                //restartCount++;
                 nodepath.resize(0);
                 altpath.resize(0);
                 /* nextnodeid = 0; */
@@ -755,7 +755,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 starts++;
                 nof_conflicts += getRestartLimit((starts+1)/2);
                 sat.btToLevel(0);
-                restartCount++;
+                //restartCount++;
                 nodepath.resize(0);
                 altpath.resize(0);
                 /* nextnodeid = 0; */

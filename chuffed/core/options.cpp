@@ -508,8 +508,10 @@ void parseOptions(int& argc, char**& argv, std::string* fileArg, const std::stri
       so.use_profiler = boolBuffer;
     } else if (cop.get("--execution_id", &intBuffer)) {
       so.execution_id = intBuffer;
+      so.use_profiler = true;
     } else if (cop.get("--profiler_port", &intBuffer)) {
       so.profiler_port = intBuffer;
+      so.use_profiler = true;
     } else if (cop.getBool("--print-reasons", boolBuffer)) {
       so.print_reasons = boolBuffer;
 #endif
