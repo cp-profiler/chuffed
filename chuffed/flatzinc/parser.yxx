@@ -415,11 +415,11 @@ namespace FlatZinc {
 %token ELSEIF
 %token ENDIF
 %token ENUM
-%token FLOAT
+%token FLOATTOK
 %token FUNCTION
 %token IF
 %token INCLUDE
-%token INT
+%token INTTOK
 %token LET
 %token <bValue> MAXIMIZE
 %token <bValue> MINIMIZE
@@ -553,14 +553,14 @@ pred_arg_simple_type:
       int_ti_expr_tail
     | SET OF int_ti_expr_tail
     | BOOLTOK
-    | FLOAT
+    | FLOATTOK
 
 pred_array_init:
       pred_array_init_arg
     | pred_array_init ',' pred_array_init_arg
 
 pred_array_init_arg:
-      INT
+      INTTOK
     | INT_LIT DOTDOT INT_LIT
 
 /********************************/
@@ -909,7 +909,7 @@ vardecl_item:
         free($10);
         delete $11;
       }
-    | ARRAY '[' INT_LIT DOTDOT INT_LIT ']' OF FLOAT ':'
+    | ARRAY '[' INT_LIT DOTDOT INT_LIT ']' OF FLOATTOK ':'
         ID annotations '=' '[' float_list ']'
       {
         ParserState* pp = static_cast<ParserState*>(parm);
@@ -1267,7 +1267,7 @@ solve_item :
 /********************************/
 
 int_ti_expr_tail :
-      INT
+      INTTOK
       { $$ = Option<AST::SetLit* >::none(); }
     | '{' int_list '}'
       { $$ = Option<AST::SetLit* >::some(new AST::SetLit(*$2)); }
@@ -1292,7 +1292,7 @@ bool_ti_expr_tail :
       }
 
 float_ti_expr_tail :
-      FLOAT
+      FLOATTOK
     | '{' float_list_head list_tail '}'
 
 /********************************/
