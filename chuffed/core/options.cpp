@@ -44,7 +44,7 @@ Options::Options() :
   , decide_introduced(true)
   , introduced_heuristic(false)
   , use_var_is_introduced(false)
-  , use_profiler(true)
+  , use_profiler(false)
   , print_nodes(false)
   , print_implications(false)
   , print_variable_list(false)
@@ -258,7 +258,7 @@ void printHelp(int& argc, char**& argv, const std::string& fileExt) {
 #ifdef HAS_PROFILER
   "\n"
   "Profiler Options:\n"
-  "  --profiling [on|off], --no-profiling\n"
+  "  --profiling\n"
   "     Send search to CPProfiler (default " << (def.use_profiler ? "on" : "off") << ").\n"
   "  --execution_id <n>\n"
   "     The ID of this execution (if known) (default " << def.execution_id << ").\n"
@@ -504,14 +504,14 @@ void parseOptions(int& argc, char**& argv, std::string* fileArg, const std::stri
     } else if (cop.getBool("--use-var-is-introduced", boolBuffer)) {
       so.use_var_is_introduced = boolBuffer;
 #ifdef HAS_PROFILER
-    } else if (cop.getBool("--profiling", boolBuffer)) {
-      so.use_profiler = boolBuffer;
+    } else if (cop.get("--profiling")) {
+      so.use_profiler = true;
     } else if (cop.get("--execution_id", &intBuffer)) {
+      so.use_profiler = true;
       so.execution_id = intBuffer;
-      so.use_profiler = true;
     } else if (cop.get("--profiler_port", &intBuffer)) {
-      so.profiler_port = intBuffer;
       so.use_profiler = true;
+      so.profiler_port = intBuffer;
     } else if (cop.getBool("--print-reasons", boolBuffer)) {
       so.print_reasons = boolBuffer;
 #endif

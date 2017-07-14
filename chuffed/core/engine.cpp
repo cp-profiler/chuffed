@@ -958,8 +958,10 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
     }
 
 #ifdef HAS_PROFILER
-    profilerConnector->done();
-    profilerConnector->disconnect();
+    if (so.use_profiler) {
+        profilerConnector->done();
+        profilerConnector->disconnect();
+    }
 #endif
 
     if (so.verbosity >= 1) printStats();
