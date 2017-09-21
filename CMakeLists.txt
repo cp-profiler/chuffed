@@ -51,16 +51,6 @@ if (WIN32)
   add_definitions(-DYY_NO_UNISTD_H)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.hh")
-
-  set(CHUFFED_PROFILER_SOURCES
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/connector.cpp
-    ${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.cpp
-    ${CHUFFED_PROFILER_SOURCES}
-  )
-
-endif()
-
 add_library(chuffed
 chuffed/vars/int-var.cpp
 chuffed/vars/int-var-el.cpp
@@ -153,7 +143,7 @@ chuffed/core/propagator.h
 ${CHUFFED_PROFILER_SOURCES}
 )
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.hh")
+if(EXISTS "${CMAKE_SOURCE_DIR}/submodules/cp-profiler-integration/message.hpp")
   target_compile_definitions(chuffed PRIVATE HAS_PROFILER)
 endif()
 
