@@ -7,6 +7,7 @@
 #include <cstring>
 
 #ifdef WIN32
+#include <WinSock2.h>
 #include <windows.h>
 #else
 #include <sys/time.h>
