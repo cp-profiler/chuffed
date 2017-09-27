@@ -26,7 +26,7 @@
 // #include <boost/date_time/posix_time/posix_time.hpp>
 
 #ifdef HAS_PROFILER
-using namespace Profiling;
+using namespace cpprofiler;
 #endif
 
 Engine engine;
@@ -38,7 +38,7 @@ Tint trail_inc;
 int nextnodeid = 0;
 
 #ifdef HAS_PROFILER
-Profiling::Connector* profilerConnector{nullptr};
+Connector* profilerConnector{nullptr};
 #endif
 
 std::map<IntVar*, string> intVarString;
@@ -130,7 +130,7 @@ std::string showVec(const vec<int>& v) {
 // Rewind nodepath and altpath after a backjump.
 static void rewindPaths(
 #ifdef HAS_PROFILER
-    Profiling::Connector& profilerConnector,
+    Connector& profilerConnector,
 #endif
     int previousDecisionLevel, int newDecisionLevel, RewindStyle rewindStyle) {
   int currentDecisionLevel;
@@ -300,7 +300,7 @@ inline bool Engine::constrain() {
     /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      profilerConnector->restart("chuffed", restartCount, so.execution_id);
+      profilerConnector->restart(restartCount);
     }
 #endif
   
@@ -493,7 +493,9 @@ RESULT Engine::search(const std::string& problemLabel) {
     restartCount = 0;
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      profilerConnector->restart(problemLabel, restartCount, so.execution_id);
+      // Chuffed always has restarts
+      const bool has_restarts = true;
+      profilerConnector->start(problemLabel, so.execution_id, has_restarts);
     }
 #endif
   
@@ -736,7 +738,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                  profilerConnector->restart("chuffed", restartCount, so.execution_id);
+                  profilerConnector->restart(restartCount);
                 }
 #endif
 
@@ -757,7 +759,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                 /* nextnodeid = 0; */
 #ifdef HAS_PROFILER
                 if (doProfiling()) {
-                  profilerConnector->restart("chuffed", restartCount, so.execution_id);
+                  profilerConnector->restart(restartCount);
                 }
 #endif
 
@@ -906,7 +908,7 @@ void Engine::solve(Problem *p, const std::string& problemLabel) {
 
 #ifdef HAS_PROFILER
     if ((so.use_profiler || so.print_nodes) && profilerConnector == nullptr)
-      profilerConnector = new Profiling::Connector(so.profiler_port);
+      profilerConnector = new Connector(so.profiler_port);
     if (so.use_profiler) {
       profilerConnector->connect();
     }
