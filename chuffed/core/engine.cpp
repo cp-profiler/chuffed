@@ -490,12 +490,11 @@ RESULT Engine::search(const std::string& problemLabel) {
     }
     std::string variableListString = ss.str();
 
-
-    std::cerr << "nof conflicts: " << nof_conflicts << std::endl;
     restartCount = 0;
 #ifdef HAS_PROFILER
     if (doProfiling()) {
-      const bool has_restarts = so.restart_base != 1000000000;
+    //   const bool has_restarts = so.restart_base != 1000000000;
+      const bool has_restarts = true;
       profilerConnector->start(problemLabel, so.execution_id, has_restarts);
     }
 #endif
