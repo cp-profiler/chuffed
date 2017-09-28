@@ -587,7 +587,7 @@ RESULT Engine::search(const std::string& problemLabel) {
                       contribString << "\"nogoods\":[";
                       for (std::set<int>::const_iterator it = contributingNogoods.begin();
                            it != contributingNogoods.end(); it++) {
-                          contribString << (it == contributingNogoods.begin() ? "" : ",") << *it;
+                          contribString << (it == contributingNogoods.begin() ? "" : ",") << "{\"nid\":" << *it << ",\"rid\":0,\"tid\":0}";
                       }
                       contribString << "]";
                     }
