@@ -514,6 +514,8 @@ void parseOptions(int& argc, char**& argv, std::string* fileArg, const std::stri
       so.profiler_port = intBuffer;
     } else if (cop.getBool("--print-reasons", boolBuffer)) {
       so.print_reasons = boolBuffer;
+    } else if (cop.get("--send-domains")) {
+      so.send_domains = true;
 #endif
     } else if (cop.getBool("--print-nodes", boolBuffer)) {
       so.print_nodes = boolBuffer;
