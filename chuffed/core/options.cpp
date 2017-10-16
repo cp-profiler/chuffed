@@ -258,11 +258,11 @@ void printHelp(int& argc, char**& argv, const std::string& fileExt) {
 #ifdef HAS_PROFILER
   "\n"
   "Profiler Options:\n"
-  "  --profiling\n"
+  "  --cpprofiler\n"
   "     Send search to CPProfiler (default " << (def.use_profiler ? "on" : "off") << ").\n"
-  "  --execution_id <n>\n"
+  "  --cpprofiler_id <n>\n"
   "     The ID of this execution (if known) (default " << def.execution_id << ").\n"
-  "  --profiler_port <n>\n"
+  "  --cpprofiler_port <n>\n"
   "     Set port of target profiler (default " << def.profiler_port << ").\n"
   "  --print-reasons [on|off]\n"
   "     Print indices of constraints responsible for failure (default " << def.print_reasons << ").\n"
@@ -504,17 +504,17 @@ void parseOptions(int& argc, char**& argv, std::string* fileArg, const std::stri
     } else if (cop.getBool("--use-var-is-introduced", boolBuffer)) {
       so.use_var_is_introduced = boolBuffer;
 #ifdef HAS_PROFILER
-    } else if (cop.get("--profiling")) {
+    } else if (cop.get("--cpprofiler")) {
       so.use_profiler = true;
-    } else if (cop.get("--execution_id", &intBuffer)) {
+    } else if (cop.get("--cpprofiler_id", &intBuffer)) {
       so.use_profiler = true;
       so.execution_id = intBuffer;
-    } else if (cop.get("--profiler_port", &intBuffer)) {
+    } else if (cop.get("--cpprofiler_port", &intBuffer)) {
       so.use_profiler = true;
       so.profiler_port = intBuffer;
     } else if (cop.getBool("--print-reasons", boolBuffer)) {
       so.print_reasons = boolBuffer;
-    } else if (cop.get("--send-domains")) {
+    } else if (cop.get("--cpprofiler_send_domains")) {
       so.send_domains = true;
 #endif
     } else if (cop.getBool("--print-nodes", boolBuffer)) {
