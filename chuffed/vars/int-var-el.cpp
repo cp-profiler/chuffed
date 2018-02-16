@@ -8,7 +8,7 @@
 
 extern std::map<IntVar*, std::string> intVarString;
 
-IntVarEL::IntVarEL(const IntVar& other) :
+IntVarEL::IntVarEL(const IntVar& other, vec<int> values) :
 		IntVar(other)
 	, lit_min(INT_MIN)
 	, lit_max(INT_MIN)
@@ -38,8 +38,10 @@ IntVarEL::IntVarEL(const IntVar& other) :
           std::string label;
           std::stringstream ss;
           ss << intVarString[(IntVar*)(&other)];
+          int val_int = v;
+          if(values.size() > 0) val_int = values[v];
           std::stringstream ssv;
-          ssv << v;
+          ssv << val_int;
           std::string val = ssv.str();
           label = ss.str(); label.append("!="); label.append(val);
           litString.insert(std::pair<int,std::string>(base_vlit+2*v, label));

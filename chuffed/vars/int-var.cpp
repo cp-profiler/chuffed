@@ -64,11 +64,11 @@ IntVar* getConstant(int v) {
 	return var;
 }
 
-void IntVar::specialiseToEL() {
+void IntVar::specialiseToEL(vec<int> values) {
 	switch (getType()) {
 		case INT_VAR_EL: return;
 		case INT_VAR_SL: return;
-		case INT_VAR: new (this) IntVarEL(*((IntVar*) this)); break;
+		case INT_VAR: new (this) IntVarEL(*((IntVar*) this), values); break;
 		default: NEVER;
 	}
 }

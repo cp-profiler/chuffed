@@ -125,7 +125,7 @@ public:
 
 	VarType getType() { return INT_VAR; }
 
-	void specialiseToEL();
+	void specialiseToEL(vec<int> values = vec<int>());
 	void specialiseToLL();
 	void specialiseToSL(vec<int>& values);
 

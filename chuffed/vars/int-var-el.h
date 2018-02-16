@@ -31,7 +31,7 @@ public:
 
 	int uiv_no;
 
-	IntVarEL(const IntVar& other);
+	IntVarEL(const IntVar& other, vec<int> _values = vec<int>());
 
 	void initVLits();
 	void initBLits();

@@ -39,7 +39,7 @@ IntVarSL::IntVarSL(const IntVar& other, vec<int>& _values)
 	IntVar *v = newIntVar(0, values.size()-1);
         // inherit the name from this SL
         intVarString[v] = intVarString[this];
-	v->specialiseToEL();
+	v->specialiseToEL(values);
 	el = (IntVarEL*) v;
 
 	// rechannel channel info
