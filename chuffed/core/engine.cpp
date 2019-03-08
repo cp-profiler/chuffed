@@ -553,6 +553,11 @@ RESULT Engine::search(const std::string& problemLabel) {
                 return RES_UNK;
             }
 
+            if (conflicts > so.conflict_limit) {
+                (*output_stream) << "% Conflict limit exceeded!\n";
+                return RES_UNK;
+            }
+
             if (decisionLevel() == 0) {
 #ifdef HAS_PROFILER
                 if (doProfiling()) {

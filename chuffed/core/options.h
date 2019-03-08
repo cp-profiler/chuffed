@@ -16,7 +16,8 @@ class Options {
 public:
 	// Solver options
 	int nof_solutions;               // Number of solutions to find
-	int time_out;                    // Amount of time before giving up
+  int time_out;                    // Amount of time before giving up
+  int conflict_limit;              // Number of conflicts before giving up
 	int rnd_seed;                    // Random seed
 	int verbosity;                   // Verbosity
 	bool print_sol;                  // Print solutions
